@@ -1,0 +1,39 @@
+{% extends "invoices/base.html"%}
+{% block content %}
+
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md-10">
+            <table class="table table-sm table-hover mt-4">
+                <thead>
+                <tr>
+                    <th scope="col">Company name</th>
+                    <th scope="col">Tin</th>
+                    <th scope="col">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for contractor in contractors %}
+                <tr class='clickable' onclick="window.location='{% url 'contractor-update' contractor.id %}'">
+                    <th scope="row">{{ contractor.company_name }}</th>
+                    <td>{{ contractor.tin }}</td>
+                    <td><a class="btn btn-outline-danger btn-sm" href="{% url 'contractor-delete' contractor.id %}">delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-2">
+            <a class="btn btn-info mt-4" href="{% url 'contractor-new' %}">add</a>
+        </div>
+    </div>
+</main>
+
+{% endblock content %}
+
+
+
+
+
+

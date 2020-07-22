@@ -1,0 +1,37 @@
+{% extends "invoices/base.html"%}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="mb-5">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-3">User profile</legend>
+            {{ user_form | crispy }}
+
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-3">Company profile</legend>
+
+
+                <div class="form-row">
+                    <div class="form-group col-md-6 mb-0">{{ profile_form.company_name|as_crispy_field }}</div>
+                    <div class="form-group col-md-6 mb-0">{{ profile_form.tin|as_crispy_field }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-5 mb-0">{{ address_form.street|as_crispy_field }}</div>
+                    <div class="form-group col-md-2 mb-0">{{ address_form.zip_code|as_crispy_field }}</div>
+                    <div class="form-group col-md-5 mb-0">{{ address_form.city|as_crispy_field }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-4 mb-0">{{ profile_form.bank_name|as_crispy_field }}</div>
+                    <div class="form-group col-md-8 mb-0">{{ profile_form.bank_account_num|as_crispy_field }}</div>
+                </div>
+            </fieldset>
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-info" type="submit">Update</button>
+        </div>
+    </form>
+</div>
+
+{% endblock content %}

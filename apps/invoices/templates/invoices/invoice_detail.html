@@ -1,0 +1,117 @@
+{% extends "invoices/base.html"%}
+{% block content %}
+
+{% if detail_view %}
+
+<a class="btn btn-info btn-sm" href="{% url 'invoice-update' invoice.pk %}">Update</a>
+<div class="float-right">
+    <a class="btn btn-info btn-sm" href="{% url 'invoice-download' invoice.pk %}">Download</a>
+</div>
+
+
+{% endif %}
+
+<div class="container border border-dark p-3 mt-3 mb-3">
+    <div class="row m-1">
+        <div class="col border border-dark m-1 p-3">
+            Faktura VAT: <b>{{ invoice.invoice_id }}</b>
+        </div>
+        <div class="col border border-dark m-1 p-3">
+            data i miejsce wystawienia dokumentu:
+            <b> {{ invoice.city_created }} {{ invoice.date_created|date:"d.m.Y" }} r.</b>
+        </div>
+    </div>
+    <div class="row m-1">
+        <div class="col border border-dark m-1 p-3">
+            <b>Sprzedawca/podatnik :</b>
+            {% for line in invoice.seller.to_list %}
+            <br>{{ line }}
+            {% endfor %}
+        </div>
+        <div class="col border border-dark m-1 p-3">
+            <b>Nabywca/płatnik :</b>
+            {% for line in invoice.buyer.to_list %}
+            <br>{{ line }}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row m-1 p-1">
+
+        <table class="pdf-products">
+            <thead>
+            <tr>
+                <th scope="col">Nazwa produktu/usługi</th>
+                <th scope="col">Cena jedn. netto</th>
+                <th scope="col">VAT</th>
+                <th scope="col">Cena jedn. brutto</th>
+                <th scope="col">Ilość</th>
+                <th scope="col">Wartość netto</th>
+                <th scope="col">Suma VAT</th>
+                <th scope="col">Wartość brutto</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.price_nett }} zł</td>
+                <td>{{ product.tax_rate }} %</td>
+                <td>{{ product.price_gross }} zł</td>
+                <td>{{ product.quantity }} szt.</td>
+                <td>{{ product.prod_total_nett }} zł</td>
+                <td>{{ product.prod_total_tax }} zł</td>
+                <td>{{ product.prod_total_gross }} zł</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td class="light"></td>
+                <td class="light"></td>
+                <td class="light"></td>
+                <th scope="col">Suma netto</th>
+                <th scope="col">Suma VAT</th>
+                <th scope="col">Suma brutto</th>
+            </tr>
+            <tr>
+                <td class="light"></td>
+                <td class="light"></td>
+                <td class="light"></td>
+                <td>{{ invoice.total_nett }} zł</td>
+                <td>{{ invoice.total_tax }} zł</td>
+                <td>{{ invoice.total_gross }} zł</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row m-1">
+        <div class="col border m-1 border-dark p-3">
+            <h4><b>razem do zapłaty: {{ invoice.total_gross }} zł</b></h4>
+            <br><b>numer rachunku bankowego: {{ invoice.bank_num_account }}</b>
+            <br><b>data wykonania/dostawy : {{ invoice.date_supply|date:"d.m.Y" }} r.</b>
+            <br><b>termin płatności: {{ invoice.date_due|date:"d.m.Y" }} r.</b>
+        </div>
+    </div>
+    <div class="row" style="height:5em;"></div>
+    <div class="row m-1">
+        <div class="col m-1 p-3">
+            <b>.............................................</b>
+            <br> <small>(podpis osoby upoważnionej do wystawienia faktury)</small>
+        </div>
+        <div class="col m-1 p-3">
+            <b>.............................................</b>
+            <br> <small>(podpis osoby upoważnionej do odbioru faktury)</small>
+        </div>
+    </div>
+    <div class="col m-1 p-3">
+        <hr>
+        <p class="text-muted"><small>faktura wygenerowana automatycznie przy użyciu aplikacji my_business</small></p>
+    </div>
+</div>
+
+
+{% endblock content %}
+
+
+
+
+
+

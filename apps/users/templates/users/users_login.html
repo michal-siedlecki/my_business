@@ -1,0 +1,21 @@
+{% extends "invoices/base.html"%}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div>
+    <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-3">Welcome again</legend>
+            {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+            <button class="btn btn-info" type="submit">Login</button>
+        </div>
+    </form>
+    <div class="border-top pt-3 border-bottom pt-3">
+        <small class="text-muted">Need an accout?</small> <a href="{% url 'register' %}">link</a>
+    </div>
+</div>
+
+{% endblock content %}

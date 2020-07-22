@@ -1,0 +1,24 @@
+{% extends "invoices/base.html"%}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<form method="POST">
+    {% csrf_token %}
+    <fieldset class="form-group">
+        <legend class="border-bottom mb-3">Create contractor</legend>
+        <div class="form-row">
+            <div class="form-group col-md-8 mb-0">{{ contractor_form.company_name|as_crispy_field }}</div>
+            <div class="form-group col-md-4 mb-0">{{ contractor_form.tin|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-4 mb-0">{{ address_form.street|as_crispy_field }}</div>
+            <div class="form-group col-md-4 mb-0">{{ address_form.city|as_crispy_field }}</div>
+            <div class="form-group col-md-4 mb-0">{{ address_form.zip_code|as_crispy_field }}</div>
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <button class="btn btn-info" type="submit">Create</button>
+    </div>
+</form>
+
+{% endblock content %}

@@ -1,0 +1,49 @@
+{% extends "invoices/base.html"%}
+{% load crispy_forms_tags %}
+{% block content %}
+<form method="POST">
+    {% csrf_token %}
+    <fieldset class="form-group">
+        <legend class="border-bottom mb-3">Create product</legend>
+        <div class="form-row">
+            <div class="form-group col-md-2 mb-0">{{ form.product_id|as_crispy_field }}</div>
+            <div class="form-group col-md-4 mb-0">{{ form.name|as_crispy_field }}</div>
+            <div class="form-group col-md-2 mb-0">{{ form.price_nett|as_crispy_field }}</div>
+            <div class="form-group col-md-2 mb-0">{{ form.tax_rate|as_crispy_field }}</div>
+            <div class="form-group col-md-2 mb-0">{{ form.price_gross|as_crispy_field }}</div>
+        </div>
+    </fieldset>
+    <div class="form-group">
+        <button class="btn btn-info" type="submit">{{ submit_button }}</button>
+    </div>
+</form>
+
+<script>
+    function updateGross(){
+        var nett = document.getElementById("id_price_nett");
+        var tax = document.getElementById("id_tax_rate");
+        var gross = document.getElementById("id_price_gross");
+
+        if ((nett.value == "NaN")||(tax.value == "NaN")){
+            return 0
+        } else {
+            gross.value = getGross(nett.value, tax.value);
+        }
+    };
+
+    function updateNett(){
+        var nett = document.getElementById("id_price_nett");
+        var tax = document.getElementById("id_tax_rate");
+        var gross = document.getElementById("id_price_gross");
+
+        if ((gross.value == "NaN")||(tax.value == "NaN")){
+            return 0
+        } else {
+            nett.value = getNett(gross.value, tax.value);
+        }
+    };
+
+
+</script>
+
+{% endblock content %}

@@ -1,0 +1,45 @@
+{% extends "invoices/base.html"%}
+{% block content %}
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md-10">
+            <table class="table table-sm table-hover mt-4">
+                <thead>
+                <tr>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Price nett</th>
+                    <th scope="col">Tax rate</th>
+                    <th scope="col">Price gross</th>
+                    <th scope="col">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for product in products %}
+                <tr class='clickable' onclick="window.location='{% url 'product-update' product.id %}'">
+                    <th scope="row">{{ product.product_id }}</th>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.price_nett }}</td>
+                    <td>{{ product.tax_rate }}</td>
+                    <td>{{ product.price_gross }}</td>
+                    <td><a class="btn btn-outline-danger btn-sm" href="{% url 'product-delete' product.id %}">delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-2">
+            <a class="btn btn-info mt-4" href="{% url 'product-new' %}">add</a>
+        </div>
+    </div>
+</main>
+
+
+{% endblock content %}
+
+
+
+
+
+

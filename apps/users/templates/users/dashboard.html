@@ -1,0 +1,59 @@
+{% extends "invoices/base.html"%}
+{% block content %}
+
+<table class="table table-sm table-hover mt-4">
+    <thead>
+    <tr>
+        <th scope="col">Invoice ID</th>
+        <th scope="col">Buyer</th>
+        <th scope="col">Total nett</th>
+        <th scope="col">Total gross</th>
+        <th scope="col">Date created</th>
+        <th scope="col">Date due</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for invoice in invoices %}
+    <tr class='clickable' onclick="window.location='{% url 'invoice-detail' invoice.id %}'">
+        <th scope="row">{{ invoice.invoice_id }}</th>
+        <td>{{ invoice.buyer }}</td>
+        <td>{{ invoice.total_nett }}</td>
+        <td>{{ invoice.total_gross }}</td>
+        <td>{{ invoice.date_created|date:"d.m.Y" }}</td>
+        <td>{{ invoice.date_due|date:"d.m.Y" }}</td>
+        <td><a class="btn btn-outline-info btn-sm" href="{% url 'invoice-download' invoice.id %}">download</a></td>
+        <td><a class="btn btn-outline-info btn-sm" href="{% url 'invoice-delete' invoice.id %}">delete</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div class="text-center">
+    {% if page_obj.has_previous %}
+    <a class="btn btn-outline-secondary btn-sm mb-4" href="?page=1">First</a>
+    <a class="btn btn-outline-secondary btn-sm mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+    <a class="btn btn-secondary btn-sm mb-4" href="?page={{ num }}">{{ num }}</a>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+    <a class="btn btn-outline-secondary btn-sm mb-4" href="?page={{ num }}">{{ num }}</a>
+    {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a class="btn btn-outline-secondary btn-sm mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+    <a class="btn btn-outline-secondary btn-sm mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+</div>
+
+
+{% endblock content %}
+
+
+
+
+
+

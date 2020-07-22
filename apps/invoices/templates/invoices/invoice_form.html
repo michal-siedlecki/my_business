@@ -1,0 +1,189 @@
+{% extends "invoices/base.html"%}
+{% load crispy_forms_tags %}
+{% block content %}
+<main role="main" class="container">
+    <div class="row">
+
+        {{ form.name.errors }}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="container border border-dark mt-3 mb-3">
+                <fieldset class="form-group">
+                    <div class="row m-1">
+                        <div class="col border border-dark m-1 p-3">
+                            Faktura VAT: <b>{{ invoice_form.invoice_id|as_crispy_field }}</b>
+                        </div>
+                        <div class="col border border-dark m-1 p-3">
+                            data i miejsce wystawienia dokumentu:
+                            <b> {{ invoice_form.city_created|as_crispy_field }} {{
+                                invoice_form.date_created|as_crispy_field}} r.</b>
+                        </div>
+                    </div>
+                    <div class="row m-1">
+                        <div class="col border border-dark m-1 p-3">
+                            <b>Sprzedawca/podatnik :</b>
+                            {% for line in seller_data.to_list %}
+                            <br>{{ line }}
+                            {% endfor %}
+                        </div>
+                        <div class="col border border-dark m-1 p-3">
+                            <b>Nabywca/płatnik :</b>
+                            {{ invoice_form.buyer|as_crispy_field }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!--Modal select products Button-->
+                <button type="button" class="btn btn-primary m-2" data-toggle="modal" data-target="#productListModal">
+                    select products
+                </button>
+
+                <div class="card m-2 mb-3 p-1">
+                    <div class="form-row link-formset" id="product-form-headers">
+                        <div class="col-md-1 mb-0"><small class="text-muted">ID</small></div>
+                        <div class="col-md-2 mb-0"><small class="text-muted">NAME</small></div>
+                        <div class="col-md-1 mb-0"><small class="text-muted">NETT</small></div>
+                        <div class="col-md-1 mb-0"><small class="text-muted">TAX</small></div>
+                        <div class="col-md-1 mb-0"><small class="text-muted">GROSS</small></div>
+                        <div class="col-md-1 mb-0"><small class="text-muted">QUANTITY</small></div>
+                        <div class="col-md-1 mb-0"><small class="text-muted">SUM NETT</small></div>
+                        <div class="col-md-2 mb-0"><small class="text-muted">SUM TAX</small></div>
+                        <div class="col-md-2 mb-0"><small class="text-muted">SUM GROSS</small></div>
+                    </div>
+
+                    <fieldset id="product-forms">
+                        <div class="form-row link-formset mt-1 mb-1" id="pf0">
+                            <div class="form-group col-md-1 mb-0">{{ product_form.product_id }}</div>
+                            <div class="form-group col-md-2 mb-0">{{ product_form.name }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.price_nett }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.tax_rate }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.price_gross }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.quantity }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.prod_total_nett }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.prod_total_tax }}</div>
+                            <div class="form-group col-md-1 mb-0">{{ product_form.prod_total_gross }}</div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="row m-1 p-1">
+                    <table class="pdf-products">
+                        <thead>
+                        <tr>
+                            <th scope="col">Suma netto</th>
+                            <th scope="col">Suma VAT</th>
+                            <th scope="col">Suma brutto</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ invoice_form.total_nett|as_crispy_field }} zł</td>
+                            <td>{{ invoice_form.total_tax|as_crispy_field }} zł</td>
+                            <td>{{ invoice_form.total_gross|as_crispy_field }} zł</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <fieldset class="form-group">
+                    <div class="row m-1">
+                        <div class="col border m-1 border-dark">
+                            <h4 class="font-weight-bold" id="totalGrossBold"></h4>
+                            <br><b>numer rachunku bankowego: {{ seller_data.bank_account_num }}</b>
+                            <div class="row">
+                                <div class="col"><b>data wykonania/dostawy : {{ invoice_form.date_supply|as_crispy_field
+                                    }}</b></div>
+                                <div class="col"><b>termin płatności: {{ invoice_form.date_due|as_crispy_field }}</b>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-group">
+                    <button class="btn btn-info" type="submit" id="createButton">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!--Product List Modal -->
+    <div class="modal fade" id="productListModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-sm table-hover mt-4">
+                        <thead>
+                        <tr>
+                            <th scope="col">Product ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Price</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <th scope="row">{{ product.product_id }}</th>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.price_nett }}</td>
+                            <td><a class="btn btn-outline-info btn-sm" onClick="addProduct(
+          '{{ product.product_id }}',
+          '{{ product.name }}',
+          '{{ product.price_nett }}',
+          '{{ product.tax_rate }}',
+          '{{ product.price_gross }}'
+          );">USE</a></td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</main>
+<script type="text/javascript">
+{% if invoice_products %}
+var invoiceProducts = {{ invoice_products | safe }};
+{% else %}
+var invoiceProducts = false;
+{% endif %}
+
+if (invoiceProducts){
+    invoiceProducts.forEach((product) => {
+          addProduct(
+            product.fields.product_id,
+            product.fields.name,
+            product.fields.price_nett,
+            product.fields.tax_rate,
+            product.fields.price_gross,
+            product.fields.quantity
+          );
+    })
+}
+$( function() {
+    $( "#datepicker1" ).datepicker();
+} );
+$( function() {
+    $( "#datepicker2" ).datepicker();
+} );
+$( function() {
+    $( "#datepicker3" ).datepicker();
+} );
+
+
+
+</script>
+
+{% endblock content %}
