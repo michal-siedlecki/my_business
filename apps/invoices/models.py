@@ -24,4 +24,4 @@ class Invoice(models.Model):
 
     @staticmethod
     def get_absolute_url():
-        return reverse('dashboard')
+        return reverse('invoice-list')

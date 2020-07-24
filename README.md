@@ -1,5 +1,7 @@
 # My Business - invoice app
 
+![MITLICENSE](https://img.shields.io/badge/MIT_License-+-orange.svg?style=flat-square)
+
 ### Main features:
 1. create, update, delete invoices
 1. manage company profile

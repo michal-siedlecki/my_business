@@ -14,12 +14,12 @@ from .models import Invoice
 
 
 def about(request):
-    return render(request, 'invoices/about.html', {'title': 'about'})
+    return render(request, 'about.html', {'title': 'about'})
 
 
 class InvoiceListView(LoginRequiredMixin, ListView):
     model = services.get_invoice_model()
-    template_name = 'users/dashboard.html'
+    template_name = 'invoices/invoices.html'
     context_object_name = 'invoices'
     ordering = ['date_created']
 
@@ -125,7 +125,7 @@ class InvoiceCreateView(View):
                 new_product = self.product_form_valid(product_form, new_invoice).save(commit=False)
                 new_product.save()
             messages.success(request, 'Invoice created')
-            return redirect('dashboard')
+            return redirect('invoice-list')
         return redirect('invoice-new')
 
 
@@ -174,13 +174,13 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
                 new_product = self.product_form_valid(product_form, new_invoice).save(commit=False)
                 new_product.save()
             messages.success(request, 'Invoice updated')
-            return redirect('dashboard')
+            return redirect('invoice-list')
         return redirect('invoice-new')
 
 
 class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Invoice
-    success_url = '/dashboard/'
+    success_url = '/invoices/'
 
     def test_func(self):
         invoice = self.get_object()
