@@ -1,11 +1,10 @@
 from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase, Client
+from django.urls import reverse
 
 from apps.invoices.models import Invoice
 from apps.users.views import profile
-from apps.invoices.views import InvoiceListView,\
-    InvoiceDetailView,\
-    InvoiceCreateView
+from apps.invoices.views import InvoiceListView, InvoiceCreateView
 
 
 class NotLoggedUserViewsTests(TestCase):
@@ -49,5 +48,12 @@ class LoggedUserViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_logged_user_can_see_invoice_detail_view(self):
-        pass
+        self.client.force_login(user=self.user)
+        invoice = self.create_invoice(1, self.user)
+        url = (reverse('invoice-detail', kwargs={'pk': invoice.invoice_id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
+
+class BusinessLogicTests(TestCase):
+    pass
