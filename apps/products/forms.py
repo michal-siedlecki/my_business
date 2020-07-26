@@ -1,6 +1,6 @@
 from django.forms import ModelForm, NumberInput
 
-from .models import Product, ProductInvoice
+from .models import Product
 
 
 class ProductForm(ModelForm):
@@ -22,7 +22,7 @@ class ProductForm(ModelForm):
 
 class ProductInvoiceForm(ModelForm):
     class Meta:
-        model = ProductInvoice
+        model = Product
         fields = [
             'product_id',
             'name',
@@ -47,3 +47,8 @@ class ProductInvoiceForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProductInvoiceForm, self).__init__(*args, **kwargs)
         self.fields['product_id'].label = "ID"
+
+    def populate_fields(self, invoice):
+        self.instance.author = invoice.author
+        self.instance.document = invoice
+        return self

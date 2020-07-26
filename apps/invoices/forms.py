@@ -39,3 +39,15 @@ class InvoiceForm(ModelForm):
             contractor_1 = Contractor.objects.filter(pk=self.instance.buyer.pk)
             contractor_2 = Contractor.objects.filter(author=user, on_invoice=False)
             self.fields['buyer'].queryset = contractor_1 | contractor_2
+
+    def populate_form_fields(self, user):
+        author = user
+        seller_contractor = user.profile.make_contractor(author=author)
+        seller_contractor.save()
+        self.instance.seller = seller_contractor
+        buyer_contractor = self.instance.buyer.copy(author=author)
+        buyer_contractor.save()
+        self.instance.buyer = buyer_contractor
+        self.instance.author = author
+        self.instance.bank_num_account = author.profile.bank_account_num
+        return self

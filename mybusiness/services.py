@@ -11,9 +11,15 @@ def get_user_invoices(user):
 
 
 def get_user_products(user):
-    return Product.objects.filter(author=user)
+    return Product.objects.filter(author=user, document=None)
+
+
+def get_invoice_products(invoice):
+    return Product.objects.filter(document=invoice)
 
 
 def add_product_to_invoice(invoice, product):
-    product(invoice=invoice)
+    product(document=invoice)
     product.save()
+
+

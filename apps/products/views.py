@@ -5,6 +5,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from .forms import ProductForm
 from .models import Product
+from mybusiness import services
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
@@ -64,7 +65,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     context_object_name = 'products'
 
     def get_queryset(self):
-        products = Product.objects.filter(author=self.request.user)
+        products = services.get_user_products(self.request.user)
         return products
 
 

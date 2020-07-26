@@ -7,10 +7,11 @@ from django.views.generic import ListView, DetailView, UpdateView, DeleteView, V
 from django_weasyprint import WeasyTemplateResponseMixin
 
 from apps.products.forms import ProductInvoiceForm
-from apps.products.models import Product, ProductInvoice
 from mybusiness import services
 from .forms import InvoiceForm
 from .models import Invoice
+
+PDF_STYLESHEETS = ['https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min']
 
 
 def about(request):
@@ -33,10 +34,10 @@ class InvoiceDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     template_name = 'invoices/invoice_detail.html'
 
     def get_context_data(self, **kwargs):
-        products = ProductInvoice.objects.filter(author=self.request.user, document=self.get_object())
+        invoice = self.get_object()
         context = {
-            'products': products,
-            'invoice': self.get_object(),
+            'products': services.get_invoice_products(invoice),
+            'invoice': invoice,
             'detail_view': True
         }
         return context
@@ -48,7 +49,7 @@ class InvoiceDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 class InvoiceDownloadView(WeasyTemplateResponseMixin, InvoiceDetailView):
     pdf_stylesheets = [
-        'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css'
+        'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min'
     ]
 
     def get_pdf_filename(self):
@@ -75,7 +76,7 @@ def get_products(request):
     return products
 
 
-class InvoiceCreateView(View):
+class InvoiceCreateView(LoginRequiredMixin, View):
     template_name = 'invoices/invoice_form.html'
     success_url = ''
     invoice_form = InvoiceForm
@@ -89,7 +90,7 @@ class InvoiceCreateView(View):
             'invoice_form': self.invoice_form(user=user),
             'product_form': self.product_form,
             'products': products,
-            'seller_data': self.request.user.profile
+            'seller_data': user.profile
         }
         return context
 
@@ -97,32 +98,21 @@ class InvoiceCreateView(View):
         context = self.get_context_data()
         return render(request, self.template_name, context)
 
-    def invoice_form_valid(self, invoice_form):
-        author = self.request.user
-        seller_contractor = self.request.user.profile.make_contractor(author=author)
-        seller_contractor.save()
-        invoice_form.instance.seller = seller_contractor
-        buyer_contractor = invoice_form.instance.buyer.copy(author=author)
-        buyer_contractor.save()
-        invoice_form.instance.buyer = buyer_contractor
-        invoice_form.instance.author = author
-        invoice_form.instance.bank_num_account = author.profile.bank_account_num
-        return invoice_form
-
     def product_form_valid(self, product_form, invoice):
         product_form.instance.author = self.request.user
         product_form.instance.document = invoice
         return product_form
 
     def post(self, request, *args, **kwargs):
-        invoice_form = InvoiceForm(data=request.POST, instance=Invoice(), user=self.request.user)
+        user = self.request.user
+        invoice_form = InvoiceForm(data=request.POST, instance=Invoice(), user=user)
         products = get_products(request)
         product_forms = [ProductInvoiceForm(data=product) for product in products]
         if invoice_form.is_valid() and all([pf.is_valid() for pf in product_forms]):
-            new_invoice = self.invoice_form_valid(invoice_form).save(commit=False)
+            new_invoice = invoice_form.populate_form_fields(user=user).save(commit=False)
             new_invoice.save()
             for product_form in product_forms:
-                new_product = self.product_form_valid(product_form, new_invoice).save(commit=False)
+                new_product = product_form.populate_fields(new_invoice).save(commit=False)
                 new_product.save()
             messages.success(request, 'Invoice created')
             return redirect('invoice-list')
@@ -133,12 +123,13 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
     model = Invoice
 
     def get_context_data(self):
+        user = self.request.user
         invoice = self.get_object()
-        invoice_form = InvoiceForm(instance=invoice, user=self.request.user, buyer=invoice.buyer)
+        invoice_form = InvoiceForm(instance=invoice, user=user, buyer=invoice.buyer)
         json_serializer = serializers.get_serializer("json")()
-        products = Product.objects.filter(author=self.request.user)
+        products = services.get_user_products(user)
         invoice_products = json_serializer.serialize(
-            ProductInvoice.objects.filter(author=self.request.user, document=invoice),
+            services.get_invoice_products(invoice),
             ensure_ascii=False
         )
 
@@ -157,18 +148,19 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
         return self.request.user == invoice.author
 
     def post(self, request, *args, **kwargs):
+        user = self.request.user
         old_invoice = self.get_object()
-        ProductInvoice.objects.filter(document=old_invoice).delete()
+        services.get_invoice_products(old_invoice).delete()
         invoice_form = InvoiceForm(
             data=request.POST,
             instance=self.get_object(),
-            user=self.request.user,
+            user=user,
             buyer=old_invoice.buyer)
         products = get_products(request)
         product_forms = [ProductInvoiceForm(data=product) for product in products]
 
         if invoice_form.is_valid() and all([pf.is_valid() for pf in product_forms]):
-            new_invoice = self.invoice_form_valid(invoice_form).save(commit=False)
+            new_invoice = self.invoice_form.populate_form_fields(invoice_form, user).save(commit=False)
             new_invoice.save()
             for product_form in product_forms:
                 new_product = self.product_form_valid(product_form, new_invoice).save(commit=False)

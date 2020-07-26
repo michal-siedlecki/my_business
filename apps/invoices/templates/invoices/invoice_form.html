@@ -15,8 +15,8 @@
                         </div>
                         <div class="col border border-dark m-1 p-3">
                             data i miejsce wystawienia dokumentu:
-                            <b> {{ invoice_form.city_created|as_crispy_field }} {{
-                                invoice_form.date_created|as_crispy_field}} r.</b>
+                            <b> {{ invoice_form.city_created|as_crispy_field }}
+                                {{ invoice_form.date_created|as_crispy_field }} r.</b>
                         </div>
                     </div>
                     <div class="row m-1">
@@ -91,8 +91,8 @@
                             <h4 class="font-weight-bold" id="totalGrossBold"></h4>
                             <br><b>numer rachunku bankowego: {{ seller_data.bank_account_num }}</b>
                             <div class="row">
-                                <div class="col"><b>data wykonania/dostawy : {{ invoice_form.date_supply|as_crispy_field
-                                    }}</b></div>
+                                <div class="col"><b>data wykonania/dostawy : {{ invoice_form.date_supply|as_crispy_field }}
+                                </b></div>
                                 <div class="col"><b>termin płatności: {{ invoice_form.date_due|as_crispy_field }}</b>
                                 </div>
                             </div>
