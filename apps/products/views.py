@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
-from .forms import ProductForm
+from .forms import ProductForm, ProductSerializer
 from .models import Product
 from mybusiness import services
 
@@ -21,18 +21,13 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         }
         return context
 
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return form
-
     def post(self, request, *args, **kwargs):
-        form = ProductForm(data=request.POST, instance=Product())
-        if form.is_valid():
-            product = self.form_valid(form).save(commit=False)
-            product.save()
-            messages.success(request, f'Product created')
-            return redirect('product-list')
-        return redirect('product-new')
+        user = self.request.user
+        serializer = ProductSerializer(data=request.POST)
+        serializer.is_valid(raise_exception=True)
+        services.create_product(**serializer.validated_data, user=user)
+        messages.success(request, f'Product created')
+        return redirect('product-list')
 
 
 class ProductUpdateView(ProductCreateView, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -51,6 +46,7 @@ class ProductUpdateView(ProductCreateView, LoginRequiredMixin, UserPassesTestMix
 
     def post(self, request, *args, **kwargs):
         form = ProductForm(data=request.POST, instance=self.get_object())
+
         if form.is_valid():
             product = self.form_valid(form).save(commit=False)
             product.save()

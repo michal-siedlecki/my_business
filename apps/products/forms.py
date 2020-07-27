@@ -1,4 +1,7 @@
+from abc import ABC
+
 from django.forms import ModelForm, NumberInput
+from rest_framework import serializers
 
 from .models import Product
 
@@ -52,3 +55,11 @@ class ProductInvoiceForm(ModelForm):
         self.instance.author = invoice.author
         self.instance.document = invoice
         return self
+
+
+class ProductSerializer(serializers.Serializer):
+    product_id = serializers.CharField(max_length=100)
+    name = serializers.CharField(max_length=100)
+    price_nett = serializers.FloatField(default=0)
+    price_gross = serializers.FloatField(default=0)
+    tax_rate = serializers.FloatField(default=0)

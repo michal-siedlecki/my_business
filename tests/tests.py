@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import RequestFactory, TestCase, Client
 from django.urls import reverse
 
-from apps.products.models import ProductInvoice
+from apps.products.models import Product
 from apps.invoices.models import Invoice
 from apps.users.views import profile
 from apps.invoices.views import InvoiceListView, InvoiceCreateView
@@ -69,13 +69,32 @@ class InvoiceCRUDTests(TestCase):
         self.client.force_login(user=self.user)
 
     def test_user_can_see_update_invoice_view(self):
-        product = ProductInvoice(
-
-        )
         user = self.user
         self.client.force_login(user=user)
         invoice = create_invoice(1, user)
         url = (reverse('invoice-update', kwargs={'pk': invoice.invoice_id}))
         response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+
+class ProductCRUDTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(
+            username='jacob', email='jacob@…', password='top_secret')
+        self.client.force_login(user=self.user)
+
+    def test_user_can_create_product(self):
+        user = self.user
+        client = self.client
+        client.force_login(user=user)
+        response = client.post('product-new/', {
+            'product_id': '1',
+            'name': 'ser',
+            'price_nett': 123,
+            'price_gross': 140,
+            'tax_rate': 23
+        })
         self.assertEqual(response.status_code, 200)
 
