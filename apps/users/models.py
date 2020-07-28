@@ -27,15 +27,3 @@ class Profile(models.Model):
     def to_list(self):
         return [self.company_name, *self.address.to_list(), str("NIP: " + str(self.tin))]
 
-    def make_contractor(self, author):
-        contractor = apps.get_model('contractors', 'Contractor')
-        address = self.address
-        address.pk = None
-        address.save()
-        return contractor(
-            company_name=self.company_name,
-            tin=self.tin,
-            address=address,
-            author=author,
-            on_invoice=True
-        )

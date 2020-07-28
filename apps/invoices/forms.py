@@ -1,3 +1,5 @@
+from datetime import date, timezone
+from rest_framework import serializers
 from django import forms
 from django.forms import ModelForm, NumberInput, DateInput
 
@@ -39,7 +41,8 @@ class InvoiceForm(ModelForm):
             contractor_1 = Contractor.objects.filter(pk=self.instance.buyer.pk)
             contractor_2 = Contractor.objects.filter(author=user, on_invoice=False)
             self.fields['buyer'].queryset = contractor_1 | contractor_2
-
+            
+            
     def populate_form_fields(self, user):
         author = user
         seller_contractor = user.profile.make_contractor(author=author)
@@ -51,3 +54,15 @@ class InvoiceForm(ModelForm):
         self.instance.author = author
         self.instance.bank_num_account = author.profile.bank_account_num
         return self
+            
+            
+class InvoiceSerializer(serializers.Serializer):
+    invoice_id = serializers.CharField(max_length=100)
+    date_created = serializers.DateField(default=date.today)
+    city_created = serializers.CharField(max_length=100)
+    total_nett = serializers.FloatField(default=0.00)
+    total_tax = serializers.FloatField(default=0.00)
+    total_gross = serializers.FloatField(default=0.00)
+    date_supply = serializers.DateField(default=date.today)
+    date_due = serializers.DateField(default=date.today)
+

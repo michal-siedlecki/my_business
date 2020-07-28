@@ -8,7 +8,7 @@ from django_weasyprint import WeasyTemplateResponseMixin
 
 from apps.products.forms import ProductInvoiceForm
 from mybusiness import services
-from .forms import InvoiceForm
+from .forms import InvoiceForm, InvoiceSerializer
 from .models import Invoice
 
 PDF_STYLESHEETS = ['https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min']
@@ -105,18 +105,12 @@ class InvoiceCreateView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
-        invoice_form = InvoiceForm(data=request.POST, instance=Invoice(), user=user)
-        products = get_products(request)
-        product_forms = [ProductInvoiceForm(data=product) for product in products]
-        if invoice_form.is_valid() and all([pf.is_valid() for pf in product_forms]):
-            new_invoice = invoice_form.populate_form_fields(user=user).save(commit=False)
-            new_invoice.save()
-            for product_form in product_forms:
-                new_product = product_form.populate_fields(new_invoice).save(commit=False)
-                new_product.save()
-            messages.success(request, 'Invoice created')
-            return redirect('invoice-list')
-        return redirect('invoice-new')
+        buyer = services.get_contractor(request.POST.get('buyer'))
+        serializer = InvoiceSerializer(data=request.POST)
+        serializer.is_valid(raise_exception=True)
+        services.create_invoice(**serializer.validated_data, user=user, buyer=buyer)
+        messages.success(request, 'Invoice created')
+        return redirect('invoice-list')
 
 
 class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMixin, UpdateView):

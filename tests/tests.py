@@ -8,6 +8,34 @@ from apps.users.views import profile
 from apps.invoices.views import InvoiceListView, InvoiceCreateView
 
 
+def create_invoice(invoice_id, author):
+    return Invoice.objects.create(invoice_id=invoice_id, author=author)
+
+
+def create_product():
+    return {
+        'product_id': 1,
+        'name': 'sample_product',
+        'price_nett': 100,
+        'price_gross': 123,
+        'tax_rate': 23,
+    }
+
+
+def create_invoice_product():
+    return {
+        'product_id': 1,
+        'name': 'sample_product',
+        'price_nett': 100,
+        'price_gross': 123,
+        'tax_rate': 23,
+        'quantity': 2,
+        'prod_total_nett': 200,
+        'prod_total_tax': 24,
+        'prod_total_gross': 224
+    }
+
+
 class NotLoggedUserViewsTests(TestCase):
 
     def test_not_logged_user_can_see_about_view(self):
@@ -22,10 +50,6 @@ class NotLoggedUserViewsTests(TestCase):
         response = client.get('/login/')
 
         self.assertEqual(response.status_code, 200)
-
-
-def create_invoice(invoice_id, author):
-    return Invoice.objects.create(invoice_id=invoice_id, author=author)
 
 
 class LoggedUserViewsTests(TestCase):
@@ -85,16 +109,27 @@ class ProductCRUDTests(TestCase):
             username='jacob', email='jacob@…', password='top_secret')
         self.client.force_login(user=self.user)
 
-    def test_user_can_create_product(self):
+    def test_user_can_see_create_product_view(self):
         user = self.user
-        client = self.client
-        client.force_login(user=user)
-        response = client.post('product-new/', {
-            'product_id': '1',
-            'name': 'ser',
-            'price_nett': 123,
-            'price_gross': 140,
-            'tax_rate': 23
-        })
+        self.client.force_login(user=user)
+        url = (reverse('product-new'))
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_user_can_create_product(self):
+        user = self.user
+        self.client.force_login(user=user)
+        product = create_product()
+        url = reverse('product-new')
+        response = self.client.post(url, product)
+        self.assertEqual(response.url, '/products')
+        self.assertEqual(len(Product.objects.all()), 1)
+
+    def test_user_can_create_invoice_product(self):
+        user = self.user
+        self.client.force_login(user=user)
+        product = create_invoice_product()
+        url = reverse('product-new')
+        response = self.client.post(url, product)
+        self.assertEqual(response.url, '/products')
+        self.assertEqual(len(Product.objects.all()), 1)
