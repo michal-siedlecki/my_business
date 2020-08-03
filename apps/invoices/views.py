@@ -8,6 +8,7 @@ from django_weasyprint import WeasyTemplateResponseMixin
 
 from apps.products.forms import ProductInvoiceForm
 from mybusiness import services
+from apps.products.forms import ProductInvoiceSerializer
 from .forms import InvoiceForm, InvoiceSerializer
 from .models import Invoice
 
@@ -106,9 +107,16 @@ class InvoiceCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         user = self.request.user
         buyer = services.get_contractor(request.POST.get('buyer'))
-        serializer = InvoiceSerializer(data=request.POST)
-        serializer.is_valid(raise_exception=True)
-        services.create_invoice(**serializer.validated_data, user=user, buyer=buyer)
+        invoice_serializer = InvoiceSerializer(data=request.POST)
+        product_serializer = ProductInvoiceSerializer(data=request.POST, many=True)
+        product_serializer.is_valid(raise_exception=True)
+        invoice_serializer.is_valid(raise_exception=True)
+        services.create_invoice(
+            invoice_data=invoice_serializer.validated_data,
+            products=product_serializer,
+            user=user,
+            buyer=buyer
+        )
         messages.success(request, 'Invoice created')
         return redirect('invoice-list')
 

@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from apps.invoices.models import Invoice
 from apps.products.models import Product
 from apps.contractors.models import Contractor
-from apps.users.models import Profile
+from apps.users.models import Profile, Address
 
 
 def get_invoice_model():
@@ -34,6 +34,14 @@ def add_product_to_invoice(invoice, product):
     product.save()
 
 
+def create_address() -> Address:
+    return Address(
+        street='Example Street',
+        city='Example',
+        zip_code='00-123'
+    )
+
+
 def create_product(user, **data) -> Product:
     product = Product(**data)
     product.author = user
@@ -51,37 +59,34 @@ def create_invoice_product(user: str, invoice: Invoice, **data) -> Product:
     return product
 
 
-def create_contractor_from_user(user: User) -> Contractor:
-    profile = get_user_profile(user)
-    address = profile.address
-    address.pk = None
-    address.save()
-    contractor = Contractor(
-        company_name=profile.company_name,
-        tin=profile.tin,
-        address=address,
-        author=user,
-        on_invoice=True
-    )
-    return contractor
+def create_contractor(user=None) -> Contractor:
+    if user:
+        address = user.profile.address
+        address.pk = None # copy address
+        address.save()
+        contractor = Contractor.objects.create(
+            company_name=user.profile.company_name,
+            tin=user.profile.tin,
+            address=address,
+            author=user,
+            on_invoice=True
+        )
+        contractor.save()
+        return contractor
 
 
-def create_invoice(user: User, buyer: Contractor, **data) -> Invoice:
-    invoice = Invoice(**data)
+def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Invoice:
+    products = [Product(**item) for item in products.validated_data]
+    print(products)
+    invoice = Invoice(**invoice_data)
     profile = get_user_profile(user)
     address = profile.address
-    address.pk = None
+    address.pk = None  # to make a copy
     address.save()
+    invoice.seller = create_contractor(user)
     invoice.buyer = buyer
     invoice.author = user
     invoice.bank_num_account = profile.bank_account_num
-    invoice.seller = Contractor(
-        company_name=profile.company_name,
-        tin=profile.tin,
-        address=address,
-        author=user,
-        on_invoice=True
-    )
     invoice.full_clean()
     invoice.save()
     return invoice

@@ -1,21 +1,16 @@
-from abc import ABC
-
 from django.forms import ModelForm, NumberInput
 from rest_framework import serializers
 
 from .models import Product
 
+PRODUCT_FIELDS = ['product_id', 'name', 'price_nett', 'tax_rate', 'price_gross']
+PRODUCT_INVOICE_FIELDS = [*PRODUCT_FIELDS, 'quantity', 'prod_total_nett', 'prod_total_tax', 'prod_total_gross']
+
 
 class ProductForm(ModelForm):
     class Meta:
         model = Product
-        fields = [
-            'product_id',
-            'name',
-            'price_nett',
-            'tax_rate',
-            'price_gross'
-        ]
+        fields = PRODUCT_FIELDS
         widgets = {
             'price_nett': NumberInput(attrs={'oninput': 'updateGross();'}),
             'tax_rate': NumberInput(attrs={'oninput': 'updateGross();'}),
@@ -26,17 +21,7 @@ class ProductForm(ModelForm):
 class ProductInvoiceForm(ModelForm):
     class Meta:
         model = Product
-        fields = [
-            'product_id',
-            'name',
-            'price_nett',
-            'tax_rate',
-            'price_gross',
-            'quantity',
-            'prod_total_nett',
-            'prod_total_tax',
-            'prod_total_gross'
-        ]
+        fields = PRODUCT_INVOICE_FIELDS
         widgets = {
             'price_nett': NumberInput(attrs={'oninput': 'updateGrosses();'}),
             'tax_rate': NumberInput(attrs={'oninput': 'updateGrosses();'}),
@@ -47,19 +32,15 @@ class ProductInvoiceForm(ModelForm):
             'prod_total_gross': NumberInput(attrs={'value': 0, 'readonly': True})
         }
 
-    def __init__(self, *args, **kwargs):
-        super(ProductInvoiceForm, self).__init__(*args, **kwargs)
-        self.fields['product_id'].label = "ID"
 
-    def populate_fields(self, invoice):
-        self.instance.author = invoice.author
-        self.instance.document = invoice
-        return self
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = PRODUCT_FIELDS
 
 
-class ProductSerializer(serializers.Serializer):
-    product_id = serializers.CharField(max_length=100)
-    name = serializers.CharField(max_length=100)
-    price_nett = serializers.FloatField(default=0)
-    price_gross = serializers.FloatField(default=0)
-    tax_rate = serializers.FloatField(default=0)
+class ProductInvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = PRODUCT_INVOICE_FIELDS
+

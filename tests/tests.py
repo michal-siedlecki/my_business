@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from apps.products.models import Product
 from apps.invoices.models import Invoice
+from apps.users.models import Profile, Address
 from apps.users.views import profile
 from apps.invoices.views import InvoiceListView, InvoiceCreateView
 
@@ -20,6 +21,14 @@ def create_product():
         'price_gross': 123,
         'tax_rate': 23,
     }
+
+
+def create_address():
+    return Address(
+        street='Example Street',
+        city='Example',
+        zip_code='00-123'
+    )
 
 
 def create_invoice_product():
@@ -52,11 +61,25 @@ class NotLoggedUserViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class UserCreateTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(
+            username='jacob', email='jacob@…', password='top_secret')
+
+    def test_user_profile_creation(self):
+        profile = Profile.objects.get(user=self.user)
+        self.assertEqual(profile.user, self.user)
+
+
 class LoggedUserViewsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
             username='jacob', email='jacob@…', password='top_secret')
+        address = create_address()
+        address.save()
+        self.user.profile.address = address
 
     def test_logged_user_can_see_profile_view(self):
         request = self.factory.get('profile')
@@ -83,6 +106,14 @@ class LoggedUserViewsTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_logged_user_can_see_update_invoice_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        invoice = create_invoice(1, user)
+        url = (reverse('invoice-update', kwargs={'pk': invoice.invoice_id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
 
 class InvoiceCRUDTests(TestCase):
 
@@ -90,15 +121,19 @@ class InvoiceCRUDTests(TestCase):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
             username='jacob', email='jacob@…', password='top_secret')
-        self.client.force_login(user=self.user)
+        address = create_address()
+        address.save()
+        self.user.profile.address = address
 
-    def test_user_can_see_update_invoice_view(self):
+    def test_user_can_create_invoice(self):
         user = self.user
         self.client.force_login(user=user)
+        url = reverse('invoice-new')
+        invoice_product = create_invoice_product()
         invoice = create_invoice(1, user)
-        url = (reverse('invoice-update', kwargs={'pk': invoice.invoice_id}))
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.post(url, invoice)
+        self.assertEqual(response.url, '/invoices')
+        self.assertEqual(len(Invoice.objects.all()), 1)
 
 
 class ProductCRUDTests(TestCase):

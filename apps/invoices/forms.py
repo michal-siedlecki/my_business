@@ -4,6 +4,7 @@ from django import forms
 from django.forms import ModelForm, NumberInput, DateInput
 
 from apps.contractors.models import Contractor
+
 from .models import Invoice
 
 
@@ -42,27 +43,16 @@ class InvoiceForm(ModelForm):
             contractor_2 = Contractor.objects.filter(author=user, on_invoice=False)
             self.fields['buyer'].queryset = contractor_1 | contractor_2
             
-            
-    def populate_form_fields(self, user):
-        author = user
-        seller_contractor = user.profile.make_contractor(author=author)
-        seller_contractor.save()
-        self.instance.seller = seller_contractor
-        buyer_contractor = self.instance.buyer.copy(author=author)
-        buyer_contractor.save()
-        self.instance.buyer = buyer_contractor
-        self.instance.author = author
-        self.instance.bank_num_account = author.profile.bank_account_num
-        return self
-            
-            
+
 class InvoiceSerializer(serializers.Serializer):
     invoice_id = serializers.CharField(max_length=100)
-    date_created = serializers.DateField(default=date.today)
+    date_created = serializers.DateField()
     city_created = serializers.CharField(max_length=100)
     total_nett = serializers.FloatField(default=0.00)
     total_tax = serializers.FloatField(default=0.00)
     total_gross = serializers.FloatField(default=0.00)
-    date_supply = serializers.DateField(default=date.today)
-    date_due = serializers.DateField(default=date.today)
+    date_supply = serializers.DateField()
+    date_due = serializers.DateField()
+
+
 
