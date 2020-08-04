@@ -40,11 +40,10 @@ def create_address():
 
 
 
-
-def create_invoice_product():
+def create_invoice_product(name):
     return {
         'product_id': 1,
-        'name': 'sample_product',
+        'name': name,
         'price_nett': 100,
         'price_gross': 123,
         'tax_rate': 23,
@@ -173,7 +172,7 @@ class ProductCRUDTests(TestCase):
     def test_user_can_create_invoice_product(self):
         user = self.user
         self.client.force_login(user=user)
-        product = create_invoice_product()
+        product = create_invoice_product('sample')
         url = reverse('product-new')
         response = self.client.post(url, product)
         self.assertEqual(response.url, '/products')
@@ -187,8 +186,8 @@ class SerializerTests(TestCase):
             username='jacob', email='jacob@…', password='top_secret')
         user = self.user
         self.client.force_login(user=user)
-        self.product_1 = create_invoice_product()
-        self.product_2 = create_invoice_product()
+        self.product_1 = create_invoice_product('sample_one')
+        self.product_2 = create_invoice_product('sample_two')
         self.invoice = create_invoice_data()
 
     def test_product_serializer_returns_list(self):
@@ -197,8 +196,6 @@ class SerializerTests(TestCase):
         query_dict = QueryDict('', mutable=True)
         query_dict.update(d)
         query_dict.update(self.product_2)
-        serializer = ProductInvoiceSerializer(data=query_dict, many=True)
-        print(serializer.child.is_valid())
-        print(serializer.child.is_valid())
-
+        serializer = ProductInvoiceSerializer(data=query_dict)
+        self.assertEqual(len(serializer.get_list()), 2)
 
