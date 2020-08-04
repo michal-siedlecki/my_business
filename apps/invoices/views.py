@@ -110,12 +110,14 @@ class InvoiceCreateView(LoginRequiredMixin, View):
         user = self.request.user
         buyer = services.get_contractor(request.POST.get('buyer'))
         invoice_serializer = InvoiceSerializer(data=request.POST)
-        product_serializer = ProductInvoiceSerializer(data=request.POST, many=True)
-        product_serializer.child.is_valid(raise_exception=True)
+        product_serializer = ProductInvoiceSerializer(data=request.POST)
+        products = product_serializer.get_list()
+        serialized_products = ProductInvoiceSerializer(data=products, many=True)
+        serialized_products.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
         services.create_invoice(
             invoice_data=invoice_serializer.validated_data,
-            products=product_serializer.child,
+            products=serialized_products.validated_data,
             user=user,
             buyer=buyer
         )
