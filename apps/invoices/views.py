@@ -1,3 +1,4 @@
+import json
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core import serializers
@@ -105,15 +106,16 @@ class InvoiceCreateView(LoginRequiredMixin, View):
         return product_form
 
     def post(self, request, *args, **kwargs):
+
         user = self.request.user
         buyer = services.get_contractor(request.POST.get('buyer'))
         invoice_serializer = InvoiceSerializer(data=request.POST)
         product_serializer = ProductInvoiceSerializer(data=request.POST, many=True)
-        product_serializer.is_valid(raise_exception=True)
+        product_serializer.child.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
         services.create_invoice(
             invoice_data=invoice_serializer.validated_data,
-            products=product_serializer,
+            products=product_serializer.child,
             user=user,
             buyer=buyer
         )

@@ -76,8 +76,6 @@ def create_contractor(user=None) -> Contractor:
 
 
 def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Invoice:
-    products = [Product(**item) for item in products.validated_data]
-    print(products)
     invoice = Invoice(**invoice_data)
     profile = get_user_profile(user)
     address = profile.address
@@ -89,6 +87,7 @@ def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Inv
     invoice.bank_num_account = profile.bank_account_num
     invoice.full_clean()
     invoice.save()
+    products.create(author=user, invoice=invoice, validated_data=products.validated_data)
     return invoice
 
 

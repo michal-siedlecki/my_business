@@ -44,3 +44,6 @@ class ProductInvoiceSerializer(serializers.ModelSerializer):
         model = Product
         fields = PRODUCT_INVOICE_FIELDS
 
+
+
+
