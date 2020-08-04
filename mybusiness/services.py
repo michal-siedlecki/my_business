@@ -87,7 +87,11 @@ def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Inv
     invoice.bank_num_account = profile.bank_account_num
     invoice.full_clean()
     invoice.save()
-    products.create(author=user, invoice=invoice, validated_data=products.validated_data)
+    for product_data in products:
+        product = Product(**product_data)
+        product.document = invoice
+        product.author = user
+        product.save()
     return invoice
 
 
