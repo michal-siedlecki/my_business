@@ -88,17 +88,32 @@ class InvoiceCRUDTests(TestCase):
         self.user = factories.create_user()
         factories.update_user_profile(self.user)
 
-    def test_user_can_create_invoice(self):
+    def test_user_can_create_invoice_single_product(self):
         user = self.user
         self.client.force_login(user=user)
         url = reverse('invoice-new')
         invoice_product = factories.create_invoice_product('sample_product')
         invoice = factories.create_invoice_data(user)
-        print(invoice)
         query_dict = QueryDict('', mutable=True)
         query_dict.update(invoice)
         query_dict.update(invoice_product)
-        print(query_dict)
+        response = self.client.post(url, query_dict)
+        self.assertEqual(response.url, '/invoices/')
+        self.assertEqual(len(Invoice.objects.all()), 1)
+
+    def test_user_can_create_invoice_multiple_product(self):
+        user = self.user
+        self.client.force_login(user=user)
+        url = reverse('invoice-new')
+        invoice_product_01 = factories.create_invoice_product('sample_product_one')
+        invoice_product_02 = factories.create_invoice_product('sample_product_two')
+        invoice_product_03 = factories.create_invoice_product('sample_product_three')
+        invoice = factories.create_invoice_data(user)
+        query_dict = QueryDict('', mutable=True)
+        query_dict.update(invoice)
+        query_dict.update(invoice_product_01)
+        query_dict.update(invoice_product_02)
+        query_dict.update(invoice_product_03)
         response = self.client.post(url, query_dict)
         self.assertEqual(response.url, '/invoices/')
         self.assertEqual(len(Invoice.objects.all()), 1)
