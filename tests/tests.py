@@ -7,51 +7,9 @@ from apps.products.models import Product
 from apps.products.forms import ProductInvoiceSerializer
 from apps.invoices.models import Invoice
 from apps.invoices.views import InvoiceListView, InvoiceCreateView
-from apps.users.models import Profile, Address
+from apps.users.models import Profile
 from apps.users.views import profile
-
-
-def create_invoice(invoice_id, author):
-    return Invoice.objects.create(invoice_id=invoice_id, author=author)
-
-
-def create_invoice_data():
-    return {
-        'invoice_id': 1
-    }
-
-
-def create_product():
-    return {
-        'product_id': 1,
-        'name': 'sample_product',
-        'price_nett': 100,
-        'price_gross': 123,
-        'tax_rate': 23,
-    }
-
-
-def create_address():
-    return Address(
-        street='Example Street',
-        city='Example',
-        zip_code='00-123'
-    )
-
-
-
-def create_invoice_product(name):
-    return {
-        'product_id': 1,
-        'name': name,
-        'price_nett': 100,
-        'price_gross': 123,
-        'tax_rate': 23,
-        'quantity': 2,
-        'prod_total_nett': 200,
-        'prod_total_tax': 24,
-        'prod_total_gross': 224
-    }
+from . import factories
 
 
 class NotLoggedUserViewsTests(TestCase):
@@ -86,7 +44,7 @@ class LoggedUserViewsTests(TestCase):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
             username='jacob', email='jacob@…', password='top_secret')
-        address = create_address()
+        address = factories.create_address()
         address.save()
         self.user.profile.address = address
 
@@ -110,7 +68,7 @@ class LoggedUserViewsTests(TestCase):
 
     def test_logged_user_can_see_invoice_detail_view(self):
         self.client.force_login(user=self.user)
-        invoice = create_invoice(1, self.user)
+        invoice = factories.create_invoice(1, self.user)
         url = (reverse('invoice-detail', kwargs={'pk': invoice.invoice_id}))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -118,7 +76,7 @@ class LoggedUserViewsTests(TestCase):
     def test_logged_user_can_see_update_invoice_view(self):
         user = self.user
         self.client.force_login(user=user)
-        invoice = create_invoice(1, user)
+        invoice = factories.create_invoice(1, user)
         url = (reverse('invoice-update', kwargs={'pk': invoice.invoice_id}))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -127,22 +85,23 @@ class LoggedUserViewsTests(TestCase):
 class InvoiceCRUDTests(TestCase):
 
     def setUp(self):
-        self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            username='jacob', email='jacob@…', password='top_secret')
-        address = create_address()
-        address.save()
-        self.user.profile.address = address
+        self.user = factories.create_user()
+        factories.update_user_profile(self.user)
 
-    # def test_user_can_create_invoice(self):
-    #     user = self.user
-    #     self.client.force_login(user=user)
-    #     url = reverse('invoice-new')
-    #     invoice_product = create_invoice_product()
-    #     invoice = create_invoice(1, user)
-    #     response = self.client.post(url, invoice)
-    #     self.assertEqual(response.url, '/invoices')
-    #     self.assertEqual(len(Invoice.objects.all()), 1)
+    def test_user_can_create_invoice(self):
+        user = self.user
+        self.client.force_login(user=user)
+        url = reverse('invoice-new')
+        invoice_product = factories.create_invoice_product('sample_product')
+        invoice = factories.create_invoice_data(user)
+        print(invoice)
+        query_dict = QueryDict('', mutable=True)
+        query_dict.update(invoice)
+        query_dict.update(invoice_product)
+        print(query_dict)
+        response = self.client.post(url, query_dict)
+        self.assertEqual(response.url, '/invoices/')
+        self.assertEqual(len(Invoice.objects.all()), 1)
 
 
 class ProductCRUDTests(TestCase):
@@ -163,7 +122,7 @@ class ProductCRUDTests(TestCase):
     def test_user_can_create_product(self):
         user = self.user
         self.client.force_login(user=user)
-        product = create_product()
+        product = factories.create_product()
         url = reverse('product-new')
         response = self.client.post(url, product)
         self.assertEqual(response.url, '/products')
@@ -172,7 +131,7 @@ class ProductCRUDTests(TestCase):
     def test_user_can_create_invoice_product(self):
         user = self.user
         self.client.force_login(user=user)
-        product = create_invoice_product('sample')
+        product = factories.create_invoice_product('sample')
         url = reverse('product-new')
         response = self.client.post(url, product)
         self.assertEqual(response.url, '/products')
@@ -186,9 +145,9 @@ class SerializerTests(TestCase):
             username='jacob', email='jacob@…', password='top_secret')
         user = self.user
         self.client.force_login(user=user)
-        self.product_1 = create_invoice_product('sample_one')
-        self.product_2 = create_invoice_product('sample_two')
-        self.invoice = create_invoice_data()
+        self.product_1 = factories.create_invoice_product('sample_one')
+        self.product_2 = factories.create_invoice_product('sample_two')
+        self.invoice = factories.create_invoice_data(user)
 
     def test_product_serializer_returns_list(self):
         d = dict(self.invoice)
@@ -198,4 +157,3 @@ class SerializerTests(TestCase):
         query_dict.update(self.product_2)
         serializer = ProductInvoiceSerializer(data=query_dict)
         self.assertEqual(len(serializer.get_list()), 2)
-

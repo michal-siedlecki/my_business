@@ -63,20 +63,6 @@ class InvoiceDownloadView(WeasyTemplateResponseMixin, InvoiceDetailView):
         return context
 
 
-def get_products(request):
-    values = (dict(request.POST.lists()))
-    products_num = len(values.get('product_id'))
-    products = []
-
-    for i in range(products_num):
-        product = {}
-        for field in ProductInvoiceForm.base_fields:
-            product[field] = values.get(field)[i]
-        products.append(product)
-
-    return products
-
-
 class InvoiceCreateView(LoginRequiredMixin, View):
     template_name = 'invoices/invoice_form.html'
     success_url = ''
