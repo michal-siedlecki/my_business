@@ -92,31 +92,44 @@ class InvoiceCRUDTests(TestCase):
         user = self.user
         self.client.force_login(user=user)
         url = reverse('invoice-new')
-        invoice_product = factories.create_invoice_product('sample_product')
-        invoice = factories.create_invoice_data(user)
+        invoice_product_data = factories.create_invoice_product_data('sample_product')
+        invoice_data = factories.create_invoice_data(user)
         query_dict = QueryDict('', mutable=True)
-        query_dict.update(invoice)
-        query_dict.update(invoice_product)
+        query_dict.update(invoice_data)
+        query_dict.update(invoice_product_data)
         response = self.client.post(url, query_dict)
+        invoice = Invoice.objects.first()
         self.assertEqual(response.url, '/invoices/')
         self.assertEqual(len(Invoice.objects.all()), 1)
+        self.assertEqual(len(Product.objects.all()), 1)
+        self.assertEqual(Product.objects.get(document=invoice).document, invoice)
 
     def test_user_can_create_invoice_multiple_product(self):
         user = self.user
         self.client.force_login(user=user)
         url = reverse('invoice-new')
-        invoice_product_01 = factories.create_invoice_product('sample_product_one')
-        invoice_product_02 = factories.create_invoice_product('sample_product_two')
-        invoice_product_03 = factories.create_invoice_product('sample_product_three')
-        invoice = factories.create_invoice_data(user)
+        invoice_product_data_01 = factories.create_invoice_product_data('sałata')
+        invoice_product_data_02 = factories.create_invoice_product_data('ziemniak')
+        invoice_data = factories.create_invoice_data(user)
         query_dict = QueryDict('', mutable=True)
-        query_dict.update(invoice)
-        query_dict.update(invoice_product_01)
-        query_dict.update(invoice_product_02)
-        query_dict.update(invoice_product_03)
+        query_dict.update(invoice_data)
+        query_dict.update(invoice_product_data_01)
+        query_dict.update(invoice_product_data_02)
         response = self.client.post(url, query_dict)
+        self.assertEqual(response.status_code, 302)  # After invoice create it should redirect to invoice list
         self.assertEqual(response.url, '/invoices/')
         self.assertEqual(len(Invoice.objects.all()), 1)
+
+    def test_user_can_update_invoice_loads_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        invoice = factories.create_invoice('FV_01', user)
+        invoice.save()
+        product_on_invoice = factories.create_invoice_product(document=invoice, author=user)
+        product_on_invoice.save()
+        url = (reverse('invoice-update', kwargs={'pk': invoice.pk}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
 
 class ProductCRUDTests(TestCase):
@@ -137,7 +150,7 @@ class ProductCRUDTests(TestCase):
     def test_user_can_create_product(self):
         user = self.user
         self.client.force_login(user=user)
-        product = factories.create_product()
+        product = factories.create_product_data()
         url = reverse('product-new')
         response = self.client.post(url, product)
         self.assertEqual(response.url, '/products')
@@ -146,7 +159,7 @@ class ProductCRUDTests(TestCase):
     def test_user_can_create_invoice_product(self):
         user = self.user
         self.client.force_login(user=user)
-        product = factories.create_invoice_product('sample')
+        product = factories.create_invoice_product_data('sample')
         url = reverse('product-new')
         response = self.client.post(url, product)
         self.assertEqual(response.url, '/products')
@@ -160,8 +173,8 @@ class SerializerTests(TestCase):
             username='jacob', email='jacob@…', password='top_secret')
         user = self.user
         self.client.force_login(user=user)
-        self.product_1 = factories.create_invoice_product('sample_one')
-        self.product_2 = factories.create_invoice_product('sample_two')
+        self.product_1 = factories.create_invoice_product_data('sample_one')
+        self.product_2 = factories.create_invoice_product_data('sample_two')
         self.invoice = factories.create_invoice_data(user)
 
     def test_product_serializer_returns_list(self):

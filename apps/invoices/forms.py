@@ -1,5 +1,3 @@
-from datetime import date, timezone
-from rest_framework import serializers
 from django import forms
 from django.forms import ModelForm, NumberInput, DateInput
 
@@ -42,17 +40,5 @@ class InvoiceForm(ModelForm):
             contractor_1 = Contractor.objects.filter(pk=self.instance.buyer.pk)
             contractor_2 = Contractor.objects.filter(author=user, on_invoice=False)
             self.fields['buyer'].queryset = contractor_1 | contractor_2
-            
-
-class InvoiceSerializer(serializers.Serializer):
-    invoice_id = serializers.CharField(max_length=100)
-    date_created = serializers.DateField()
-    city_created = serializers.CharField(max_length=100)
-    total_nett = serializers.FloatField(default=0.00)
-    total_tax = serializers.FloatField(default=0.00)
-    total_gross = serializers.FloatField(default=0.00)
-    date_supply = serializers.DateField()
-    date_due = serializers.DateField()
-
 
 

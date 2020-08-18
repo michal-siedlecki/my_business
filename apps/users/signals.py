@@ -8,9 +8,13 @@ from apps.users.models import Profile, Address
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        address = Address.objects.create()
-        address.save()
+        address = Address.objects.create(
+            street='Sample Streeet',
+            city='Sample City',
+            zip_code='00-000'
+        )
         Profile.objects.create(user=instance, address=address)
+
 
 
 @receiver(post_save, sender=User)

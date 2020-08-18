@@ -27,8 +27,8 @@ def profile(request):
 
         if user_form.is_valid() and profile_form.is_valid() and address_form.is_valid():
             user_form.save()
-            profile_form.save()
             address_form.save()
+            profile_form.save()
             messages.success(request, f'Profile updated')
             return redirect('profile')
     else:

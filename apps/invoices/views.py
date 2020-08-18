@@ -1,6 +1,5 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core import serializers
 from django.shortcuts import redirect
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, View
@@ -9,7 +8,8 @@ from django_weasyprint import WeasyTemplateResponseMixin
 from apps.products.forms import ProductInvoiceForm
 from mybusiness import services
 from apps.products.forms import ProductInvoiceSerializer
-from .forms import InvoiceForm, InvoiceSerializer
+from .forms import InvoiceForm
+from mybusiness import serializers
 from .models import Invoice
 
 PDF_STYLESHEETS = ['https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min']
@@ -87,7 +87,7 @@ class InvoiceCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         user = self.request.user
         buyer = services.get_contractor(request.POST.get('buyer'))
-        invoice_serializer = InvoiceSerializer(data=request.POST)
+        invoice_serializer = serializers.InvoiceSerializer(data=request.POST)
         product_serializer = ProductInvoiceSerializer(data=request.POST)
         products = product_serializer.get_list()
         serialized_products = ProductInvoiceSerializer(data=products, many=True)
@@ -108,20 +108,16 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
 
     def get_context_data(self):
         user = self.request.user
+        products = services.get_user_products(user)
         invoice = self.get_object()
         invoice_form = InvoiceForm(instance=invoice, user=user, buyer=invoice.buyer)
-        json_serializer = serializers.get_serializer("json")()
-        products = services.get_user_products(user)
-        invoice_products = json_serializer.serialize(
-            services.get_invoice_products(invoice),
-            ensure_ascii=False
-        )
+        products_on_invoice = serializers.serialize_products_on_invoice(invoice)
 
         context = {
             'invoice_form': invoice_form,
             'product_form': self.product_form,
             'products': products,
-            'invoice_products': invoice_products,
+            'invoice_products': products_on_invoice,
             'seller_data': invoice.seller
         }
 
@@ -135,23 +131,21 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
         user = self.request.user
         old_invoice = self.get_object()
         services.get_invoice_products(old_invoice).delete()
-        invoice_form = InvoiceForm(
-            data=request.POST,
-            instance=self.get_object(),
+        buyer = old_invoice.buyer
+        invoice_serializer = serializers.InvoiceSerializer(data=request.POST)
+        product_serializer = ProductInvoiceSerializer(data=request.POST)
+        products = product_serializer.get_list()
+        serialized_products = ProductInvoiceSerializer(data=products, many=True)
+        serialized_products.is_valid(raise_exception=True)
+        invoice_serializer.is_valid(raise_exception=True)
+        services.create_invoice(
+            invoice_data=invoice_serializer.validated_data,
+            products=serialized_products.validated_data,
             user=user,
-            buyer=old_invoice.buyer)
-        products = get_products(request)
-        product_forms = [ProductInvoiceForm(data=product) for product in products]
-
-        if invoice_form.is_valid() and all([pf.is_valid() for pf in product_forms]):
-            new_invoice = self.invoice_form.populate_form_fields(invoice_form, user).save(commit=False)
-            new_invoice.save()
-            for product_form in product_forms:
-                new_product = self.product_form_valid(product_form, new_invoice).save(commit=False)
-                new_product.save()
-            messages.success(request, 'Invoice updated')
-            return redirect('invoice-list')
-        return redirect('invoice-new')
+            buyer=buyer
+        )
+        messages.success(request, 'Invoice updated')
+        return redirect('invoice-list')
 
 
 class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

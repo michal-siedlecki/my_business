@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from apps.contractors.models import Contractor
 from apps.invoices.models import Invoice
 from apps.users.models import Address
+from apps.products.models import Product
 
 
 def create_address():
@@ -38,6 +39,14 @@ def create_invoice(invoice_id, author):
     )
 
 
+def create_invoice_product(document, author):
+    return Product(
+        **create_product_data(),
+        document=document,
+        author=author
+    )
+
+
 def create_contractor(author):
     return Contractor.objects.create(
         company_name='Sample C.o.',
@@ -65,7 +74,7 @@ def create_invoice_data(author):
     }
 
 
-def create_product():
+def create_product_data():
     return {
         'product_id': 1,
         'name': 'sample_product',
@@ -75,7 +84,7 @@ def create_product():
     }
 
 
-def create_invoice_product(name):
+def create_invoice_product_data(name):
     return {
         'product_id': 1,
         'name': name,
