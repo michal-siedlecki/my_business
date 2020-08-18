@@ -1,16 +1,12 @@
+from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import redirect
-from django.shortcuts import render
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView, View
 from django_weasyprint import WeasyTemplateResponseMixin
 
-from apps.products.forms import ProductInvoiceForm
-from mybusiness import services
-from apps.products.forms import ProductInvoiceSerializer
+from mybusiness import services, serializers
+from apps.products.forms import ProductInvoiceSerializer, ProductInvoiceForm
 from .forms import InvoiceForm
-from mybusiness import serializers
-from .models import Invoice
 
 PDF_STYLESHEETS = ['https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min']
 
@@ -31,7 +27,7 @@ class InvoiceListView(LoginRequiredMixin, ListView):
 
 
 class InvoiceDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    model = Invoice
+    model = services.get_invoice_model()
     template_name = 'invoices/invoice_detail.html'
 
     def get_context_data(self, **kwargs):
@@ -104,7 +100,7 @@ class InvoiceCreateView(LoginRequiredMixin, View):
 
 
 class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Invoice
+    model = services.get_invoice_model()
 
     def get_context_data(self):
         user = self.request.user
@@ -149,7 +145,7 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
 
 
 class InvoiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = Invoice
+    model = services.get_invoice_model()
     success_url = '/invoices/'
 
     def test_func(self):

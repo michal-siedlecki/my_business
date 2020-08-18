@@ -59,20 +59,31 @@ def create_invoice_product(user: str, invoice: Invoice, **data) -> Product:
     return product
 
 
-def create_contractor(user=None) -> Contractor:
-    if user:
-        address = user.profile.address
-        address.pk = None # copy address
-        address.save()
-        contractor = Contractor.objects.create(
-            company_name=user.profile.company_name,
-            tin=user.profile.tin,
-            address=address,
-            author=user,
-            on_invoice=True
-        )
-        contractor.save()
-        return contractor
+def create_contractor_from_user(user) -> Contractor:
+    address = user.profile.address
+    address.pk = None  # copy address
+    address.save()
+    contractor = Contractor.objects.create(
+        company_name=user.profile.company_name,
+        tin=user.profile.tin,
+        address=address,
+        author=user,
+        on_invoice=True
+    )
+    contractor.save()
+    return contractor
+
+
+def create_contractor(data, address, user):
+    address = Address.objects.create(**address)
+    address.save()
+    contractor = Contractor(
+        **data,
+        address=address,
+        author=user
+    )
+    contractor.full_clean()
+    contractor.save()
 
 
 def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Invoice:
@@ -81,7 +92,7 @@ def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Inv
     address = profile.address
     address.pk = None  # to make a copy
     address.save()
-    invoice.seller = create_contractor(user)
+    invoice.seller = create_contractor_from_user(user)
     invoice.buyer = buyer
     invoice.author = user
     invoice.bank_num_account = profile.bank_account_num
@@ -93,7 +104,3 @@ def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Inv
         product.author = user
         product.save()
     return invoice
-
-
-
-

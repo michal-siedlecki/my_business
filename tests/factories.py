@@ -7,12 +7,16 @@ from apps.users.models import Address
 from apps.products.models import Product
 
 
+def create_address_data():
+    return {
+        'street': 'Example Street',
+        'city': 'Example avenue',
+        'zip_code': '00-111'
+    }
+
+
 def create_address():
-    return Address.objects.create(
-        street='Example Street',
-        city='Example',
-        zip_code='00-123'
-    )
+    return Address.objects.create(**create_address_data())
 
 
 def create_user():
@@ -47,10 +51,16 @@ def create_invoice_product(document, author):
     )
 
 
+def create_contractor_data():
+    return {
+        'company_name': 'Sample C.o.',
+        'tin': 123456789
+    }
+
+
 def create_contractor(author):
     return Contractor.objects.create(
-        company_name='Sample C.o.',
-        tin=123456789,
+        **create_contractor_data(),
         address=create_address(),
         author=author,
         on_invoice=False

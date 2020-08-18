@@ -9,6 +9,7 @@ from apps.invoices.models import Invoice
 from apps.invoices.views import InvoiceListView, InvoiceCreateView
 from apps.users.models import Profile
 from apps.users.views import profile
+from apps.contractors.models import Contractor
 from . import factories
 
 
@@ -34,7 +35,7 @@ class UserCreateTests(TestCase):
         self.user = User.objects.create_user(
             username='jacob', email='jacob@…', password='top_secret')
 
-    def test_user_profile_creation(self):
+    def test_user_profile_autocreation(self):
         profile = Profile.objects.get(user=self.user)
         self.assertEqual(profile.user, self.user)
 
@@ -166,7 +167,7 @@ class ProductCRUDTests(TestCase):
         self.assertEqual(len(Product.objects.all()), 1)
 
 
-class SerializerTests(TestCase):
+class SerializersTests(TestCase):
     def setUp(self) -> None:
         self.factory = RequestFactory()
         self.user = User.objects.create_user(
@@ -185,3 +186,25 @@ class SerializerTests(TestCase):
         query_dict.update(self.product_2)
         serializer = ProductInvoiceSerializer(data=query_dict)
         self.assertEqual(len(serializer.get_list()), 2)
+
+
+class ContractorCRUDTests(TestCase):
+    def setUp(self) -> None:
+        self.factory = RequestFactory()
+        self.user = User.objects.create_user(
+            username='jacob', email='jacob@…', password='top_secret')
+        user = self.user
+        self.client.force_login(user=user)
+
+    def test_user_can_create_contractor(self):
+        contractor_data = factories.create_contractor_data()
+        address_data = factories.create_address_data()
+        url = reverse('contractor-new')
+        query_dict = QueryDict('', mutable=True)
+        query_dict.update(contractor_data)
+        query_dict.update(address_data)
+        response = self.client.post(url, query_dict)
+        self.assertEqual(response.url, '/contractors')
+        self.assertEqual(len(Contractor.objects.all()), 1)
+        self.assertIsNotNone(Contractor.objects.get(author=self.user))
+

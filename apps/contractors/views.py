@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
+from mybusiness import services, serializers
 from apps.users.forms import AddressForm
 from apps.users.models import Address
 from .forms import ContractorForm
@@ -28,15 +29,18 @@ class ContractorCreateView(LoginRequiredMixin, CreateView):
         return form
 
     def post(self, request, *args, **kwargs):
-        contractor_form = ContractorForm(data=request.POST, instance=Contractor())
-        address_form = AddressForm(data=request.POST, instance=Address())
-        if address_form.is_valid() and contractor_form.is_valid():
-            address = address_form.save()
-            contractor = self.contractor_form_valid(contractor_form, address).save(commit=False)
-            contractor.save()
-            messages.success(request, f'Contractor created')
-            return redirect('contractor-list')
-        return redirect('contractor-new')
+        user = self.request.user
+        serializer_contractor = serializers.ContractorSerializer(data=request.POST)
+        serializer_address = serializers.AddressSerializer(data=request.POST)
+        serializer_address.is_valid(raise_exception=True)
+        serializer_contractor.is_valid(raise_exception=True)
+        services.create_contractor(
+            data=serializer_contractor.validated_data,
+            address=serializer_address.validated_data,
+            user=user
+        )
+        messages.success(request, f'Contractor created')
+        return redirect('contractor-list')
 
 
 class ContractorListView(LoginRequiredMixin, ListView):
