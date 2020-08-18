@@ -89,9 +89,16 @@ def create_contractor(data, address, user):
 def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Invoice:
     invoice = Invoice(**invoice_data)
     profile = get_user_profile(user)
-    address = profile.address
-    address.pk = None  # to make a copy
-    address.save()
+    seller_address = profile.address
+    seller_address.pk = None  # to make a copy
+    seller_address.save()
+    buyer.pk = None  # to make a copy
+    buyer_address = buyer.address
+    buyer_address.pk = None
+    buyer_address.save()
+    buyer.address = buyer_address
+    buyer.on_invoice = True
+    buyer.save()
     invoice.seller = create_contractor_from_user(user)
     invoice.buyer = buyer
     invoice.author = user
