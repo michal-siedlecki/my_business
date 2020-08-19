@@ -28,7 +28,7 @@ class ContractorCreateView(LoginRequiredMixin, CreateView):
         context = {
             'contractor_form': self.contractor_form,
             'address_form': self.address_form,
-            'button': 'Create'
+            'submit_button': 'Create'
         }
         return context
 
@@ -63,7 +63,7 @@ class ContractorUpdateView(ContractorCreateView, LoginRequiredMixin, UserPassesT
         context = {
             'contractor_form': contractor_form,
             'address_form': address_form,
-            'button': 'Update'
+            'submit_button': 'Update'
         }
         return context
 

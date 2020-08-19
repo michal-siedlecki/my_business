@@ -50,6 +50,10 @@ def create_product(user, **data) -> Product:
     return product
 
 
+def update_product(product_pk, data):
+    Product.objects.filter(pk=product_pk).update(**data)
+
+
 def create_invoice_product(user: str, invoice: Invoice, **data) -> Product:
     product = Product(**data)
     product.author = user

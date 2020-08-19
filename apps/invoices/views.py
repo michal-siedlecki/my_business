@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView, UpdateView, DeleteView, V
 from django_weasyprint import WeasyTemplateResponseMixin
 
 from mybusiness import services, serializers
-from apps.products.forms import ProductInvoiceSerializer, ProductInvoiceForm
+from apps.products.forms import ProductInvoiceForm
 from .forms import InvoiceForm
 
 PDF_STYLESHEETS = ['https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min']
@@ -84,9 +84,9 @@ class InvoiceCreateView(LoginRequiredMixin, View):
         user = self.request.user
         buyer = services.get_contractor(request.POST.get('buyer'))
         invoice_serializer = serializers.InvoiceSerializer(data=request.POST)
-        product_serializer = ProductInvoiceSerializer(data=request.POST)
+        product_serializer = serializers.ProductInvoiceSerializer(data=request.POST)
         products = product_serializer.get_list()
-        serialized_products = ProductInvoiceSerializer(data=products, many=True)
+        serialized_products = serializers.ProductInvoiceSerializer(data=products, many=True)
         serialized_products.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
         services.create_invoice(
@@ -129,9 +129,9 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
         services.get_invoice_products(old_invoice).delete()
         buyer = old_invoice.buyer
         invoice_serializer = serializers.InvoiceSerializer(data=request.POST)
-        product_serializer = ProductInvoiceSerializer(data=request.POST)
+        product_serializer = serializers.ProductInvoiceSerializer(data=request.POST)
         products = product_serializer.get_list()
-        serialized_products = ProductInvoiceSerializer(data=products, many=True)
+        serialized_products = serializers.ProductInvoiceSerializer(data=products, many=True)
         serialized_products.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
         services.create_invoice(

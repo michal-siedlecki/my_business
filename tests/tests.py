@@ -4,12 +4,12 @@ from django.test import RequestFactory, TestCase, Client
 from django.urls import reverse
 
 from apps.products.models import Product
-from apps.products.forms import ProductInvoiceSerializer
 from apps.invoices.models import Invoice
 from apps.invoices.views import InvoiceListView, InvoiceCreateView
 from apps.users.models import Profile
 from apps.users.views import profile
 from apps.contractors.models import Contractor
+from mybusiness import serializers
 from . import factories
 
 
@@ -36,8 +36,8 @@ class UserCreateTests(TestCase):
             username='jacob', email='jacob@…', password='top_secret')
 
     def test_user_profile_autocreation(self):
-        profile = Profile.objects.get(user=self.user)
-        self.assertEqual(profile.user, self.user)
+        user_profile = Profile.objects.get(user=self.user)
+        self.assertEqual(user_profile.user, self.user)
 
 
 class LoggedUserViewsTests(TestCase):
@@ -88,8 +88,7 @@ class LoggedUserViewsTests(TestCase):
         url = (reverse('contractor-new'))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context_data.get('button'), 'Create')
-
+        self.assertEqual(response.context_data.get('submit_button'), 'Create')
 
     def test_logged_user_can_see_contractor_update_view(self):
         user = self.user
@@ -98,7 +97,24 @@ class LoggedUserViewsTests(TestCase):
         url = (reverse('contractor-update', kwargs={'pk': contractor.id}))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context_data.get('button'), 'Update')
+        self.assertEqual(response.context_data.get('submit_button'), 'Update')
+
+    def test_logged_user_can_see_product_create_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        url = (reverse('product-new'))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data.get('submit_button'), 'Create')
+
+    def test_logged_user_can_see_product_update_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        product = factories.create_product(user)
+        url = (reverse('product-update', kwargs={'pk': product.id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data.get('submit_button'), 'Update')
 
 
 class InvoiceCRUDTests(TestCase):
@@ -202,7 +218,7 @@ class SerializersTests(TestCase):
         query_dict = QueryDict('', mutable=True)
         query_dict.update(d)
         query_dict.update(self.product_2)
-        serializer = ProductInvoiceSerializer(data=query_dict)
+        serializer = serializers.ProductInvoiceSerializer(data=query_dict)
         self.assertEqual(len(serializer.get_list()), 2)
 
 
@@ -237,6 +253,3 @@ class ContractorCRUDTests(TestCase):
         response = self.client.post(url, query_dict)
         self.assertEqual(response.url, '/contractors')
         self.assertEqual(Contractor.objects.get(pk=contractor.pk).company_name, 'New name')
-
-
-

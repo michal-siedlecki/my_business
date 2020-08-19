@@ -3,9 +3,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
-from .forms import ProductForm, ProductSerializer
+from .forms import ProductForm
 from .models import Product
-from mybusiness import services
+from mybusiness import services, serializers
 
 
 class ProductCreateView(LoginRequiredMixin, CreateView):
@@ -23,7 +23,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
-        serializer = ProductSerializer(data=request.POST)
+        serializer = serializers.ProductSerializer(data=request.POST)
         serializer.is_valid(raise_exception=True)
         services.create_product(**serializer.validated_data, user=user)
         messages.success(request, f'Product created')
@@ -45,14 +45,12 @@ class ProductUpdateView(ProductCreateView, LoginRequiredMixin, UserPassesTestMix
         return self.request.user == product.author
 
     def post(self, request, *args, **kwargs):
-        form = ProductForm(data=request.POST, instance=self.get_object())
-
-        if form.is_valid():
-            product = self.form_valid(form).save(commit=False)
-            product.save()
-            messages.success(request, f'Product created')
-            return redirect('product-list')
-        return redirect('product-new')
+        product_pk = self.get_object().pk
+        serializer = serializers.ProductSerializer(data=request.POST)
+        serializer.is_valid(raise_exception=True)
+        services.update_product(**serializer.validated_data, product_pk=product_pk)
+        messages.success(request, f'Product updated')
+        return redirect('product-list')
 
 
 class ProductListView(LoginRequiredMixin, ListView):

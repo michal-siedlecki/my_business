@@ -106,3 +106,7 @@ def create_invoice_product_data(name):
         'prod_total_tax': 24,
         'prod_total_gross': 224
     }
+
+
+def create_product(user):
+    return Product.objects.create(**create_product_data(), author=user)

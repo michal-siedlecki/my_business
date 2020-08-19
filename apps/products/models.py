@@ -18,6 +18,8 @@ class Product(models.Model):
     prod_total_tax = models.FloatField(default=0)
     prod_total_gross = models.FloatField(default=0)
 
+    objects = models.Manager()
+
     @staticmethod
     def get_absolute_url():
         return reverse('product-list')

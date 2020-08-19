@@ -7,6 +7,8 @@ class Address(models.Model):
     city = models.CharField(max_length=100, default='')
     zip_code = models.CharField(max_length=100, default='')
 
+    objects = models.Manager()
+
     def to_list(self):
         city_zip = " ".join([self.city, str(self.zip_code)])
         return [self.street, city_zip]
@@ -19,6 +21,8 @@ class Profile(models.Model):
     bank_name = models.CharField(max_length=100, default='')
     bank_account_num = models.CharField(max_length=26, default='')
     address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True, blank=True)
+
+    objects = models.Manager()
 
     def __str__(self):
         return self.company_name
