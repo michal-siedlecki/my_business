@@ -67,14 +67,19 @@ class ContractorUpdateView(ContractorCreateView, LoginRequiredMixin, UserPassesT
         return context
 
     def post(self, request, *args, **kwargs):
-        contractor_form = ContractorForm(data=request.POST, instance=self.get_object())
-        address_form = AddressForm(data=request.POST, instance=self.get_object().address)
-        if address_form.is_valid() and contractor_form.is_valid():
-            address_form.save()
-            contractor_form.save()
-            messages.success(request, f'Contractor updated')
-            return redirect('contractor-list')
-        return redirect('contractor-new')
+        contractor = self.get_object()
+        serializer_contractor = serializers.ContractorSerializer(data=request.POST)
+        serializer_address = serializers.AddressSerializer(data=request.POST)
+        serializer_address.is_valid(raise_exception=True)
+        serializer_contractor.is_valid(raise_exception=True)
+        services.update_contractor(
+            contractor_pk=contractor.pk,
+            data=serializer_contractor.validated_data,
+            address_pk=contractor.address.pk,
+            address_data=serializer_address.validated_data
+        )
+        messages.success(request, f'Contractor updated')
+        return redirect('contractor-list')
 
     def test_func(self):
         contractor = self.get_object()

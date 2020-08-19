@@ -74,6 +74,11 @@ def create_contractor_from_user(user) -> Contractor:
     return contractor
 
 
+def update_contractor(contractor_pk, data, address_pk, address_data):
+    Address.objects.filter(pk=address_pk).update(**address_data)
+    Contractor.objects.filter(pk=contractor_pk).update(**data)
+
+
 def create_contractor(data, address, user):
     address = Address.objects.create(**address)
     address.save()
