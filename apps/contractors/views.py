@@ -5,9 +5,17 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 
 from mybusiness import services, serializers
 from apps.users.forms import AddressForm
-from apps.users.models import Address
 from .forms import ContractorForm
 from .models import Contractor
+
+
+class ContractorListView(LoginRequiredMixin, ListView):
+    model = Contractor
+    template_name = 'contractors/contractors.html'
+    context_object_name = 'contractors'
+
+    def get_queryset(self):
+        return ContractorListView.model.objects.filter(author=self.request.user, on_invoice=False)
 
 
 class ContractorCreateView(LoginRequiredMixin, CreateView):
@@ -19,7 +27,8 @@ class ContractorCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = {
             'contractor_form': self.contractor_form,
-            'address_form': self.address_form
+            'address_form': self.address_form,
+            'button': 'Create'
         }
         return context
 
@@ -43,15 +52,6 @@ class ContractorCreateView(LoginRequiredMixin, CreateView):
         return redirect('contractor-list')
 
 
-class ContractorListView(LoginRequiredMixin, ListView):
-    model = Contractor
-    template_name = 'contractors/contractors.html'
-    context_object_name = 'contractors'
-
-    def get_queryset(self):
-        return ContractorListView.model.objects.filter(author=self.request.user, on_invoice=False)
-
-
 class ContractorUpdateView(ContractorCreateView, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Contractor
 
@@ -63,6 +63,7 @@ class ContractorUpdateView(ContractorCreateView, LoginRequiredMixin, UserPassesT
         context = {
             'contractor_form': contractor_form,
             'address_form': address_form,
+            'button': 'Update'
         }
         return context
 

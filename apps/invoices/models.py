@@ -22,6 +22,8 @@ class Invoice(models.Model):
     date_due = models.DateField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    objects = models.Manager()
+
     @staticmethod
     def get_absolute_url():
         return reverse('invoice-list')

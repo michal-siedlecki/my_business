@@ -82,6 +82,24 @@ class LoggedUserViewsTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_logged_user_can_see_contractor_create_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        url = (reverse('contractor-new'))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data.get('button'), 'Create')
+
+
+    def test_logged_user_can_see_contractor_update_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        contractor = factories.create_contractor(user)
+        url = (reverse('contractor-update', kwargs={'pk': contractor.id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context_data.get('button'), 'Update')
+
 
 class InvoiceCRUDTests(TestCase):
 

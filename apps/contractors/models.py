@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 from apps.users.models import Address
 
@@ -12,6 +12,8 @@ class Contractor(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     on_invoice = models.BooleanField(default=False)
 
+    objects = models.Manager()
+
     @staticmethod
     def get_absolute_url():
         return reverse('contractor-list')
@@ -22,13 +24,3 @@ class Contractor(models.Model):
     def to_list(self):
         return [self.company_name, *self.address.to_list(), str("NIP: " + str(self.tin))]
 
-    def copy(self, author):
-        new_contractor = self
-        new_contractor.pk = None
-        address = self.address
-        address.pk = None
-        address.save()
-        new_contractor.address = address
-        new_contractor.author = author
-        new_contractor.on_invoice = True
-        return new_contractor
