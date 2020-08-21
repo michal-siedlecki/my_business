@@ -7,8 +7,7 @@ from django_weasyprint import WeasyTemplateResponseMixin
 from mybusiness import services, serializers
 from apps.products.forms import ProductInvoiceForm
 from .forms import InvoiceForm
-
-PDF_STYLESHEETS = ['https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min']
+from .models import Invoice
 
 
 def about(request):
@@ -72,7 +71,8 @@ class InvoiceCreateView(LoginRequiredMixin, View):
             'invoice_form': self.invoice_form(user=user),
             'product_form': self.product_form,
             'products': products,
-            'seller_data': user.profile
+            'seller_data': user.profile,
+            'submit_button': 'Create'
         }
         return context
 
@@ -100,7 +100,7 @@ class InvoiceCreateView(LoginRequiredMixin, View):
 
 
 class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = services.get_invoice_model()
+    model = Invoice
 
     def get_context_data(self):
         user = self.request.user
@@ -114,7 +114,8 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
             'product_form': self.product_form,
             'products': products,
             'invoice_products': products_on_invoice,
-            'seller_data': invoice.seller
+            'seller_data': invoice.seller,
+            'submit_button': 'Update'
         }
 
         return context
@@ -125,20 +126,19 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
 
     def post(self, request, *args, **kwargs):
         user = self.request.user
-        old_invoice = self.get_object()
-        services.get_invoice_products(old_invoice).delete()
-        buyer = old_invoice.buyer
+        invoice = self.get_object()
+        services.get_invoice_products(invoice).delete()
         invoice_serializer = serializers.InvoiceSerializer(data=request.POST)
         product_serializer = serializers.ProductInvoiceSerializer(data=request.POST)
         products = product_serializer.get_list()
         serialized_products = serializers.ProductInvoiceSerializer(data=products, many=True)
         serialized_products.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
-        services.create_invoice(
+        services.update_invoice(
+            invoice_pk=invoice.pk,
             invoice_data=invoice_serializer.validated_data,
             products=serialized_products.validated_data,
-            user=user,
-            buyer=buyer
+            user=user
         )
         messages.success(request, 'Invoice updated')
         return redirect('invoice-list')

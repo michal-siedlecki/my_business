@@ -120,3 +120,14 @@ def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Inv
         product.author = user
         product.save()
     return invoice
+
+
+def update_invoice(invoice_pk, invoice_data, products, user: User) -> Invoice:
+    Invoice.objects.filter(pk=invoice_pk).update(**invoice_data)
+    invoice = Invoice.objects.get(pk=invoice_pk)
+    for product_data in products:
+        product = Product(**product_data)
+        product.document = invoice
+        product.author = user
+        product.save()
+    return invoice

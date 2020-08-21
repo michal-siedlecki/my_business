@@ -166,6 +166,24 @@ class InvoiceCRUDTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_user_can_update_invoice_data(self):
+        user = self.user
+        self.client.force_login(user=user)
+        invoice = factories.create_invoice('FV_01', user)
+        invoice.save()
+        product_on_invoice = factories.create_invoice_product(document=invoice, author=user)
+        product_on_invoice.save()
+        url = (reverse('invoice-update', kwargs={'pk': invoice.pk}))
+        updated_invoice_data = factories.create_invoice_data(user)
+        query_dict = QueryDict('', mutable=True)
+        query_dict.update(updated_invoice_data)
+        updated_product_data = factories.create_product_data()
+        query_dict.update(updated_product_data)
+        response = self.client.post(url, query_dict)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/invoices/')
+        self.assertEqual(Invoice.objects.get(pk=1).invoice_id, updated_invoice_data.get('invoice_id'))
+
 
 class ProductCRUDTests(TestCase):
 

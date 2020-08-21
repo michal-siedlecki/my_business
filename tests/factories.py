@@ -69,7 +69,7 @@ def create_contractor(author):
 
 def create_invoice_data(author):
     return {
-        'invoice_id': 1,
+        'invoice_id': 'FV_02',
         'date_created': datetime.date(2020, 8, 5),
         'city_created': 'Sample City',
         'seller': create_contractor(author=author).id,
@@ -80,7 +80,10 @@ def create_invoice_data(author):
         'bank_num_account': '2255550000111122223333',
         'date_supply': datetime.date(2020, 8, 5),
         'date_due': datetime.date(2020, 8, 5),
-        'author': author
+        'author': author,
+        'prod_total_nett': 20,
+        'prod_total_tax': 5,
+        'prod_total_gross': 25
     }
 
 
