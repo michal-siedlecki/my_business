@@ -1,4 +1,5 @@
 import datetime
+from faker import Faker
 from django.contrib.auth.models import User
 
 from apps.contractors.models import Contractor
@@ -9,7 +10,7 @@ from apps.products.models import Product
 
 def create_address_data():
     return {
-        'street': 'Example Street',
+        'street': 'Example street',
         'city': 'Example avenue',
         'zip_code': '00-111'
     }

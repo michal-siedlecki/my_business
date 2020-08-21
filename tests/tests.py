@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from apps.products.models import Product
 from apps.invoices.models import Invoice
-from apps.invoices.views import InvoiceListView, InvoiceCreateView
+from apps.invoices.views import InvoiceListView
 from apps.users.models import Profile
 from apps.users.views import profile
 from apps.contractors.models import Contractor
@@ -121,13 +121,13 @@ class LoggedUserViewsTests(TestCase):
     def test_logged_user_can_see_contractor_list_view(self):
         user = self.user
         self.client.force_login(user=user)
+        factories.create_contractor(user)
         url = (reverse('contractor-list'))
         response = self.client.get(url)
         contractors_in_view = response.context_data.get('contractors')
         contractors_of_user = Contractor.objects.filter(author=user, on_invoice=False)
-        self.assertQuerysetEqual(contractors_in_view, contractors_of_user)
+        self.assertEqual(len(contractors_in_view), len(contractors_of_user))
         self.assertEqual(response.status_code, 200)
-
 
 
 class InvoiceCRUDTests(TestCase):

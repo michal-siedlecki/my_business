@@ -28,7 +28,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'coverage',
     'crispy_forms',
     'apps.users.apps.UsersConfig',
     'apps.contractors.apps.ContractorsConfig',
