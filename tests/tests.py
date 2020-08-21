@@ -62,19 +62,21 @@ class LoggedUserViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_logged_user_can_see_invoice_create_view(self):
-        request = self.factory.get('invoice-new')
-        request.user = self.user
-        response = InvoiceCreateView.as_view()(request)
+        user = self.user
+        self.client.force_login(user)
+        url = (reverse('invoice-new'))
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_logged_user_can_see_invoice_detail_view(self):
-        self.client.force_login(user=self.user)
+        user = self.user
+        self.client.force_login(user=user)
         invoice = factories.create_invoice(1, self.user)
         url = (reverse('invoice-detail', kwargs={'pk': invoice.invoice_id}))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-    def test_logged_user_can_see_update_invoice_view(self):
+    def test_logged_user_can_see_invoice_update_view(self):
         user = self.user
         self.client.force_login(user=user)
         invoice = factories.create_invoice(1, user)
@@ -115,6 +117,17 @@ class LoggedUserViewsTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context_data.get('submit_button'), 'Update')
+
+    def test_logged_user_can_see_contractor_list_view(self):
+        user = self.user
+        self.client.force_login(user=user)
+        url = (reverse('contractor-list'))
+        response = self.client.get(url)
+        contractors_in_view = response.context_data.get('contractors')
+        contractors_of_user = Contractor.objects.filter(author=user, on_invoice=False)
+        self.assertQuerysetEqual(contractors_in_view, contractors_of_user)
+        self.assertEqual(response.status_code, 200)
+
 
 
 class InvoiceCRUDTests(TestCase):

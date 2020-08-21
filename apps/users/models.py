@@ -3,9 +3,9 @@ from django.db import models
 
 
 class Address(models.Model):
-    street = models.CharField(max_length=100, default='')
-    city = models.CharField(max_length=100, default='')
-    zip_code = models.CharField(max_length=100, default='')
+    street = models.CharField(max_length=100, default='UNDEFINED')
+    city = models.CharField(max_length=100, default='UNDEFINED')
+    zip_code = models.CharField(max_length=100, default='UNDEFINED')
 
     objects = models.Manager()
 
@@ -16,10 +16,10 @@ class Address(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    company_name = models.CharField(max_length=100, default='')
-    tin = models.CharField(max_length=100, default='')
-    bank_name = models.CharField(max_length=100, default='')
-    bank_account_num = models.CharField(max_length=26, default='')
+    company_name = models.CharField(max_length=100, default='UNDEFINED')
+    tin = models.CharField(max_length=100, default='UNDEFINED')
+    bank_name = models.CharField(max_length=100, default='UNDEFINED')
+    bank_account_num = models.CharField(max_length=26, default='UNDEFINED')
     address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True, blank=True)
 
     objects = models.Manager()
