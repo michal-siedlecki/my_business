@@ -29,4 +29,3 @@ class Profile(models.Model):
 
     def to_list(self):
         return [self.company_name, *self.address.to_list(), str("NIP: " + str(self.tin))]
-

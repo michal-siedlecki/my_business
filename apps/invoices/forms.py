@@ -40,5 +40,3 @@ class InvoiceForm(ModelForm):
             contractor_1 = Contractor.objects.filter(pk=self.instance.buyer.pk)
             contractor_2 = Contractor.objects.filter(author=user, on_invoice=False)
             self.fields['buyer'].queryset = contractor_1 | contractor_2
-
-

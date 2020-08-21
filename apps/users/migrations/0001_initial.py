@@ -32,8 +32,8 @@ class Migration(migrations.Migration):
                 ('bank_account_num', models.CharField(default='', max_length=26)),
                 ('address', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
                                                  to='users.Address')),
-                (
-                'user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE,
+                                              to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

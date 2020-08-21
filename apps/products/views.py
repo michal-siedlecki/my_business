@@ -26,7 +26,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
         serializer = serializers.ProductSerializer(data=request.POST)
         serializer.is_valid(raise_exception=True)
         services.create_product(**serializer.validated_data, user=user)
-        messages.success(request, f'Product created')
+        messages.success(request, 'Product created')
         return redirect('product-list')
 
 
@@ -49,7 +49,7 @@ class ProductUpdateView(ProductCreateView, LoginRequiredMixin, UserPassesTestMix
         serializer = serializers.ProductSerializer(data=request.POST)
         serializer.is_valid(raise_exception=True)
         services.update_product(**serializer.validated_data, product_pk=product_pk)
-        messages.success(request, f'Product updated')
+        messages.success(request, 'Product updated')
         return redirect('product-list')
 
 

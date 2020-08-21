@@ -23,5 +23,3 @@ class Product(models.Model):
     @staticmethod
     def get_absolute_url():
         return reverse('product-list')
-
-

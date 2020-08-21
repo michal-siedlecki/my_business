@@ -1,5 +1,4 @@
 from django.forms import ModelForm, NumberInput
-from rest_framework import serializers
 
 from .models import Product
 
@@ -31,6 +30,3 @@ class ProductInvoiceForm(ModelForm):
             'prod_total_tax': NumberInput(attrs={'value': 0, 'readonly': True}),
             'prod_total_gross': NumberInput(attrs={'value': 0, 'readonly': True})
         }
-
-
-

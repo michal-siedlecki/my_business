@@ -48,7 +48,7 @@ class ContractorCreateView(LoginRequiredMixin, CreateView):
             address=serializer_address.validated_data,
             user=user
         )
-        messages.success(request, f'Contractor created')
+        messages.success(request, 'Contractor created')
         return redirect('contractor-list')
 
 
@@ -79,7 +79,7 @@ class ContractorUpdateView(ContractorCreateView, LoginRequiredMixin, UserPassesT
             address_pk=contractor.address.pk,
             address_data=serializer_address.validated_data
         )
-        messages.success(request, f'Contractor updated')
+        messages.success(request, 'Contractor updated')
         return redirect('contractor-list')
 
     def test_func(self):
