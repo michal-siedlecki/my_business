@@ -89,12 +89,13 @@ class InvoiceCreateView(LoginRequiredMixin, View):
         serialized_products = serializers.ProductInvoiceSerializer(data=products, many=True)
         serialized_products.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
-        services.create_invoice(
+        invoice = services.create_invoice(
             invoice_data=invoice_serializer.validated_data,
-            products=serialized_products.validated_data,
             user=user,
             buyer=buyer
         )
+        products = serialized_products.validated_data
+        services.assign_products_to_invoice(products, invoice)
         messages.success(request, 'Invoice created')
         return redirect('invoice-list')
 
@@ -125,7 +126,6 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
         return self.request.user == invoice.author
 
     def post(self, request, *args, **kwargs):
-        user = self.request.user
         invoice = self.get_object()
         services.get_invoice_products(invoice).delete()
         invoice_serializer = serializers.InvoiceSerializer(data=request.POST)
@@ -134,12 +134,12 @@ class InvoiceUpdateView(InvoiceCreateView, LoginRequiredMixin, UserPassesTestMix
         serialized_products = serializers.ProductInvoiceSerializer(data=products, many=True)
         serialized_products.is_valid(raise_exception=True)
         invoice_serializer.is_valid(raise_exception=True)
-        services.update_invoice(
+        invoice = services.update_invoice(
             invoice_pk=invoice.pk,
-            invoice_data=invoice_serializer.validated_data,
-            products=serialized_products.validated_data,
-            user=user
+            invoice_data=invoice_serializer.validated_data
         )
+        products = serialized_products.validated_data
+        services.assign_products_to_invoice(products, invoice)
         messages.success(request, 'Invoice updated')
         return redirect('invoice-list')
 

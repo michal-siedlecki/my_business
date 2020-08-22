@@ -7,20 +7,23 @@ from apps.invoices.models import Invoice
 from apps.users.models import Address
 from apps.products.models import Product
 
+faker = Faker('pl_PL')
+
 
 def create_profile_data():
     return {
-        'company_name': 'new name',
-        'tin' : '23526',
-        'bank_name': '2435646',
-        'bank_account_num': '3462574hw'
+        'company_name': faker.company(),
+        'tin' : faker.nip(),
+        'bank_name': faker.credit_card_provider(),
+        'bank_account_num': faker.random_number(26)
     }
+
 
 def create_address_data():
     return {
-        'street': 'Example street',
-        'city': 'Example avenue',
-        'zip_code': '00-111'
+        'street': faker.street_address(),
+        'city': faker.city(),
+        'zip_code': faker.postcode()
     }
 
 
@@ -30,19 +33,39 @@ def create_address():
 
 def create_user():
     return User.objects.create_user(
-        username='jacob',
-        email='jacob@…',
-        password='top_secret'
+        username=faker.user_name(),
+        email=faker.email(),
+        password=faker.password()
     )
 
 
 def create_bank_account_num():
-    return 2211112222333344445555
+    return faker.random_number(26)
 
 
 def update_user_profile(user):
     user.profile.address = create_address()
     user.profile.bank_account_num = create_bank_account_num()
+
+
+def create_invoice_data(author):
+    return {
+        'invoice_id': 'FV'+str(faker.numerify()),
+        'date_created': datetime.date(2020, 8, 5),
+        'city_created': faker.city(),
+        'seller': create_contractor(author=author).id,
+        'buyer': create_contractor(author=author).id,
+        'total_nett': 200.0,
+        'total_tax': 48.0,
+        'total_gross': 248.0,
+        'bank_num_account': create_bank_account_num(),
+        'date_supply': datetime.date(2020, 8, 5),
+        'date_due': datetime.date(2020, 8, 5),
+        'author': author,
+        'prod_total_nett': 20,
+        'prod_total_tax': 5,
+        'prod_total_gross': 25
+    }
 
 
 def create_invoice(invoice_id, author):
@@ -62,8 +85,8 @@ def create_invoice_product(document, author):
 
 def create_contractor_data():
     return {
-        'company_name': 'Sample C.o.',
-        'tin': 123456789
+        'company_name': faker.company(),
+        'tin': faker.nip()
     }
 
 
@@ -76,29 +99,9 @@ def create_contractor(author):
     )
 
 
-def create_invoice_data(author):
-    return {
-        'invoice_id': 'FV_02',
-        'date_created': datetime.date(2020, 8, 5),
-        'city_created': 'Sample City',
-        'seller': create_contractor(author=author).id,
-        'buyer': create_contractor(author=author).id,
-        'total_nett': 200.0,
-        'total_tax': 48.0,
-        'total_gross': 248.0,
-        'bank_num_account': '2255550000111122223333',
-        'date_supply': datetime.date(2020, 8, 5),
-        'date_due': datetime.date(2020, 8, 5),
-        'author': author,
-        'prod_total_nett': 20,
-        'prod_total_tax': 5,
-        'prod_total_gross': 25
-    }
-
-
 def create_product_data():
     return {
-        'product_id': 1,
+        'product_id': faker.random_number(1),
         'name': 'sample_product',
         'price_nett': 100,
         'price_gross': 123,
@@ -107,17 +110,14 @@ def create_product_data():
 
 
 def create_invoice_product_data(name):
-    return {
-        'product_id': 1,
-        'name': name,
-        'price_nett': 100,
-        'price_gross': 123,
-        'tax_rate': 23,
+    base = create_product_data()
+    base.update({
         'quantity': 2,
         'prod_total_nett': 200,
         'prod_total_tax': 24,
         'prod_total_gross': 224
-    }
+    })
+    return base
 
 
 def create_product(user):

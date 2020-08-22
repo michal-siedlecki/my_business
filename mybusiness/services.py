@@ -29,19 +29,6 @@ def get_invoice_products(invoice):
     return Product.objects.filter(document=invoice)
 
 
-def add_product_to_invoice(invoice, product):
-    product(document=invoice)
-    product.save()
-
-
-def create_address() -> Address:
-    return Address(
-        street='Example Street',
-        city='Example',
-        zip_code='00-123'
-    )
-
-
 def create_product(user, **data) -> Product:
     product = Product(**data)
     product.author = user
@@ -94,41 +81,47 @@ def update_contractor(contractor_pk, data, address_pk, address_data):
     Address.objects.filter(pk=address_pk).update(**address_data)
     Contractor.objects.filter(pk=contractor_pk).update(**data)
 
-def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Invoice:
+
+def copy_address(address):
+    address.pk = None
+    address.save()
+
+
+def assign_contractor(contractor):
+    contractor.pk = None  # to make a copy
+    contractor_address = contractor.address
+    contractor_address.pk = None
+    contractor_address.save()
+    contractor.address = contractor_address
+    contractor.on_invoice = True
+    contractor.save()
+    return contractor
+
+
+def assign_products_to_invoice(products, invoice):
+    for product_data in products:
+        product = Product(**product_data)
+        product.document = invoice
+        product.author = invoice.author
+        product.save()
+
+
+def create_invoice(invoice_data, user: User, buyer: Contractor) -> Invoice:
     invoice = Invoice(**invoice_data)
     profile = get_user_profile(user)
-    seller_address = profile.address
-    seller_address.pk = None  # to make a copy
-    seller_address.save()
-    buyer.pk = None  # to make a copy
-    buyer_address = buyer.address
-    buyer_address.pk = None
-    buyer_address.save()
-    buyer.address = buyer_address
-    buyer.on_invoice = True
-    buyer.save()
+    copy_address(profile.address)  # copy seller address to avoid modification after
     invoice.seller = create_contractor_from_user(user)
-    invoice.buyer = buyer
+    invoice.buyer = assign_contractor(buyer)
     invoice.author = user
     invoice.bank_num_account = profile.bank_account_num
     invoice.full_clean()
     invoice.save()
-    for product_data in products:
-        product = Product(**product_data)
-        product.document = invoice
-        product.author = user
-        product.save()
     return invoice
 
 
-def update_invoice(invoice_pk, invoice_data, products, user: User) -> Invoice:
+def update_invoice(invoice_pk, invoice_data) -> Invoice:
     Invoice.objects.filter(pk=invoice_pk).update(**invoice_data)
     invoice = Invoice.objects.get(pk=invoice_pk)
-    for product_data in products:
-        product = Product(**product_data)
-        product.document = invoice
-        product.author = user
-        product.save()
     return invoice
 
 
