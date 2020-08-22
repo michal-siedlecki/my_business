@@ -78,11 +78,6 @@ def create_contractor_from_user(user) -> Contractor:
     return contractor
 
 
-def update_contractor(contractor_pk, data, address_pk, address_data):
-    Address.objects.filter(pk=address_pk).update(**address_data)
-    Contractor.objects.filter(pk=contractor_pk).update(**data)
-
-
 def create_contractor(data, address, user):
     address = Address.objects.create(**address)
     address.save()
@@ -94,6 +89,10 @@ def create_contractor(data, address, user):
     contractor.full_clean()
     contractor.save()
 
+
+def update_contractor(contractor_pk, data, address_pk, address_data):
+    Address.objects.filter(pk=address_pk).update(**address_data)
+    Contractor.objects.filter(pk=contractor_pk).update(**data)
 
 def create_invoice(invoice_data, products, user: User, buyer: Contractor) -> Invoice:
     invoice = Invoice(**invoice_data)
@@ -131,3 +130,20 @@ def update_invoice(invoice_pk, invoice_data, products, user: User) -> Invoice:
         product.author = user
         product.save()
     return invoice
+
+
+def create_profile(data, address, user):
+    address = Address.objects.create(**address)
+    address.save()
+    profile = Profile(
+        **data,
+        address=address,
+        user=user
+    )
+    profile.full_clean()
+    profile.save()
+
+
+def update_profile(profile_pk, data, address_pk, address_data):
+    Address.objects.filter(pk=address_pk).update(**address_data)
+    Profile.objects.filter(pk=profile_pk).update(**data)

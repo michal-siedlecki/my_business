@@ -8,6 +8,14 @@ from apps.users.models import Address
 from apps.products.models import Product
 
 
+def create_profile_data():
+    return {
+        'company_name': 'new name',
+        'tin' : '23526',
+        'bank_name': '2435646',
+        'bank_account_num': '3462574hw'
+    }
+
 def create_address_data():
     return {
         'street': 'Example street',

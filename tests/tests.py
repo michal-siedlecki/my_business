@@ -55,6 +55,20 @@ class LoggedUserViewsTests(TestCase):
         response = profile(request)
         self.assertEqual(response.status_code, 200)
 
+    def test_user_can_update_profile(self):
+        user = self.user
+        self.client.force_login(user=user)
+        url = reverse('profile')
+        profile_data = factories.create_profile_data()
+        address_data = factories.create_address_data()
+        query_dict = QueryDict('', mutable=True)
+        query_dict.update(profile_data)
+        query_dict.update(address_data)
+        response = self.client.post(url, query_dict)
+        self.assertEqual(response.url, '/profile/')
+        self.assertEqual(Profile.objects.get(user=user).company_name, profile_data.get('company_name'))
+
+
     def test_logged_user_can_see_invoice_list_view(self):
         request = self.factory.get('invoices')
         request.user = self.user
@@ -161,9 +175,16 @@ class InvoiceCRUDTests(TestCase):
         invoice_data = factories.create_invoice_data(user)
         query_dict = QueryDict('', mutable=True)
         query_dict.update(invoice_data)
-        query_dict.update(invoice_product_data_01)
-        query_dict.update(invoice_product_data_02)
-        response = self.client.post(url, query_dict)
+
+        query_dict2 = QueryDict('', mutable=True)
+        query_dict2.update(invoice_product_data_01)
+
+        query_dict3 = QueryDict('', mutable=True)
+        query_dict3.update(invoice_product_data_02)
+
+        q = {**query_dict, **query_dict2, **query_dict3}
+        response = self.client.post(url, q)
+        print(len(Product.objects.filter(author=user)))
         self.assertEqual(response.status_code, 302)  # After invoice create it should redirect to invoice list
         self.assertEqual(response.url, '/invoices/')
         self.assertEqual(len(Invoice.objects.all()), 1)

@@ -6,6 +6,8 @@ from .forms import UserRegisterForm, \
     UserUpdateForm, \
     ProfileUpdateForm, \
     AddressForm
+from .models import Profile
+from mybusiness import serializers, services
 
 
 def register(request):
@@ -24,16 +26,21 @@ def register(request):
 @login_required
 def profile(request):
     if request.method == 'POST':
-        user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = ProfileUpdateForm(request.POST, instance=request.user.profile)
-        address_form = AddressForm(request.POST, instance=request.user.profile.address)
-
-        if user_form.is_valid() and profile_form.is_valid() and address_form.is_valid():
-            user_form.save()
-            address_form.save()
-            profile_form.save()
-            messages.success(request, 'Profile updated')
-            return redirect('profile')
+        user = request.user
+        profile = Profile.objects.get(user=user)
+        address = profile.address
+        serializer_profile = serializers.ProfileSerializer(data=request.POST)
+        serializer_address = serializers.AddressSerializer(data=request.POST)
+        serializer_address.is_valid(raise_exception=True)
+        serializer_profile.is_valid(raise_exception=True)
+        services.update_profile(
+            profile_pk=profile.pk,
+            data=serializer_profile.validated_data,
+            address_pk=address.pk,
+            address_data=serializer_address.validated_data
+        )
+        messages.success(request, 'Profile updated')
+        return redirect('profile')
     else:
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=request.user.profile)

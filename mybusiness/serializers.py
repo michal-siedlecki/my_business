@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.products.models import Product
 from apps.products.forms import PRODUCT_FIELDS, PRODUCT_INVOICE_FIELDS
 from apps.contractors.models import Contractor
-from apps.users.models import Address
+from apps.users.models import Profile, Address
 from mybusiness import services
 
 
@@ -62,3 +62,14 @@ class ProductInvoiceSerializer(serializers.ModelSerializer):
                     d[key] = data.getlist(key)[num - 1]
             dicts.append(d)
         return dicts
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+      class Meta:
+        model = Profile
+        fields = [
+            'company_name',
+            'tin',
+            'bank_name',
+            'bank_account_num'
+        ]
