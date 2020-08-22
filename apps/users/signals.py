@@ -9,9 +9,9 @@ from apps.users.models import Profile, Address
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         address = Address.objects.create(
-            street='Sample Streeet',
-            city='Sample City',
-            zip_code='00-000'
+            street='UNDEFINED',
+            city='UNDEFINED',
+            zip_code='UNDEFINED'
         )
         Profile.objects.create(user=instance, address=address)
 

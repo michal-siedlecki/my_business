@@ -68,11 +68,18 @@ def create_invoice_data(author):
     }
 
 
-def create_invoice(invoice_id, author):
-    return Invoice.objects.create(
-        invoice_id=invoice_id,
-        author=author
-    )
+def create_invoice(invoice_id, author, num=None):
+    if num:
+        for _ in range(num):
+            Invoice.objects.create(
+                invoice_id=invoice_id,
+                author=author
+            )
+    else:
+        return Invoice.objects.create(
+            invoice_id=invoice_id,
+            author=author
+        )
 
 
 def create_invoice_product(document, author):

@@ -5,7 +5,6 @@ from django.urls import reverse
 
 from apps.products.models import Product
 from apps.invoices.models import Invoice
-from apps.invoices.views import InvoiceListView
 from apps.users.models import Profile
 from apps.users.views import profile
 from apps.contractors.models import Contractor
@@ -14,28 +13,30 @@ from . import factories
 
 
 class NotLoggedUserViewsTests(TestCase):
+    def setUp(self) -> None:
+        self.client = Client()
 
     def test_not_logged_user_can_see_about_view(self):
-        client = Client()
-        response = client.get('/')
-
+        response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'about')
 
     def test_not_logged_user_can_see_login_view(self):
-        client = Client()
-        response = client.get('/login/')
-
+        response = self.client.get('/login/')
         self.assertEqual(response.status_code, 200)
 
+    def test_not_logged_user_cant_see_invoices(self):
+        response = self.client.get('/invoices/')
+        self.assertEqual(response.status_code, 302)  # test if user is redirect to login
+        self.assertEqual(response.url, '/login/?next=/invoices/')
 
-class UserCreateTests(TestCase):
+
+class UserCreateTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            username='jacob', email='jacob@…', password='top_secret')
+        self.user = factories.create_user()
 
-    def test_user_profile_autocreation(self):
+    def test_user_profile_auto_creation(self):
         user_profile = Profile.objects.get(user=self.user)
         self.assertEqual(user_profile.user, self.user)
 
@@ -43,11 +44,8 @@ class UserCreateTests(TestCase):
 class LoggedUserViewsTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.user = User.objects.create_user(
-            username='jacob', email='jacob@…', password='top_secret')
-        address = factories.create_address()
-        address.save()
-        self.user.profile.address = address
+        self.user = factories.create_user()
+        self.client.force_login(user=self.user)
 
     def test_logged_user_can_see_profile_view(self):
         request = self.factory.get('profile')
@@ -56,8 +54,6 @@ class LoggedUserViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_user_can_update_profile(self):
-        user = self.user
-        self.client.force_login(user=user)
         url = reverse('profile')
         profile_data = factories.create_profile_data()
         address_data = factories.create_address_data()
@@ -66,33 +62,46 @@ class LoggedUserViewsTests(TestCase):
         query_dict.update(address_data)
         response = self.client.post(url, query_dict)
         self.assertEqual(response.url, '/profile/')
-        self.assertEqual(Profile.objects.get(user=user).company_name, profile_data.get('company_name'))
+        self.assertEqual(Profile.objects.get(user=self.user).company_name, profile_data.get('company_name'))
 
     def test_logged_user_can_see_invoice_list_view(self):
-        request = self.factory.get('invoices')
-        request.user = self.user
-        response = InvoiceListView.as_view()(request)
+        factories.create_invoice(1, self.user, 5)
+        url = (reverse('invoice-list'))
+        response = self.client.get(url)
+        invoices_in_view = response.context_data.get('object_list')
+        invoices_of_user = Invoice.objects.filter(author=self.user)
         self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            invoices_in_view.order_by('date_created'),
+            map(repr, invoices_of_user)
+        )
 
     def test_logged_user_can_see_invoice_create_view(self):
-        user = self.user
-        self.client.force_login(user)
         url = (reverse('invoice-new'))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_logged_user_can_see_invoice_detail_view(self):
-        user = self.user
-        self.client.force_login(user=user)
         invoice = factories.create_invoice(1, self.user)
         url = (reverse('invoice-detail', kwargs={'pk': invoice.invoice_id}))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    def test_logged_user_cant_see_other_users_invoices(self):
+        other_user = factories.create_user()
+        other_invoice = factories.create_invoice(1, other_user)
+        url = (reverse('invoice-detail', kwargs={'pk': other_invoice.invoice_id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+        url = (reverse('invoice-update', kwargs={'pk': other_invoice.invoice_id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+        url = (reverse('invoice-delete', kwargs={'pk': other_invoice.invoice_id}))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+
     def test_logged_user_can_see_invoice_update_view(self):
-        user = self.user
-        self.client.force_login(user=user)
-        invoice = factories.create_invoice(1, user)
+        invoice = factories.create_invoice(1, self.user)
         url = (reverse('invoice-update', kwargs={'pk': invoice.invoice_id}))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
