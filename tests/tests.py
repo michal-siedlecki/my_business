@@ -43,15 +43,20 @@ class UserCreateTest(TestCase):
 
 class LoggedUserViewsTests(TestCase):
     def setUp(self):
+        self.client = Client()
         self.factory = RequestFactory()
         self.user = factories.create_user()
+        factories.update_user_profile(user=self.user)
         self.client.force_login(user=self.user)
 
     def test_logged_user_can_see_profile_view(self):
-        request = self.factory.get('profile')
-        request.user = self.user
-        response = profile(request)
+        url = reverse('profile')
+        response = self.client.get(url)
+        profile_data = Profile.objects.get(user=self.user)
+        print(profile_data.to_list())
         self.assertEqual(response.status_code, 200)
+        for x in profile_data.to_list():
+            self.assertContains(response, x)
 
     def test_user_can_update_profile(self):
         url = reverse('profile')

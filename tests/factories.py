@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from apps.contractors.models import Contractor
 from apps.invoices.models import Invoice
-from apps.users.models import Address
+from apps.users.models import Address, Profile
 from apps.products.models import Product
 
 faker = Faker('pl_PL')
@@ -13,7 +13,7 @@ faker = Faker('pl_PL')
 def create_profile_data():
     return {
         'company_name': faker.company(),
-        'tin' : faker.nip(),
+        'tin': faker.nip(),
         'bank_name': faker.credit_card_provider(),
         'bank_account_num': faker.random_number(26)
     }
@@ -45,7 +45,11 @@ def create_bank_account_num():
 
 def update_user_profile(user):
     user.profile.address = create_address()
-    user.profile.bank_account_num = create_bank_account_num()
+    user.profile.address.save()
+    profile_data = create_profile_data()
+    user.profile.company_name = profile_data.get('company_name')
+    user.profile.tin = profile_data.get('tin')
+    user.profile.save()
 
 
 def create_invoice_data(author):

@@ -10,8 +10,7 @@ class Address(models.Model):
     objects = models.Manager()
 
     def to_list(self):
-        city_zip = " ".join([self.city, str(self.zip_code)])
-        return [self.street, city_zip]
+        return [self.street, self.city, self.zip_code]
 
 
 class Profile(models.Model):
@@ -28,4 +27,4 @@ class Profile(models.Model):
         return self.company_name
 
     def to_list(self):
-        return [self.company_name, *self.address.to_list(), str("NIP: " + str(self.tin))]
+        return [self.company_name, *self.address.to_list(), self.tin]
