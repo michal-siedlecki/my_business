@@ -25,11 +25,12 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['company_name',
-                  'tin',
-                  'bank_name',
-                  'bank_account_num'
-                  ]
+        fields = [
+            'company_name',
+            'tin',
+            'bank_name',
+            'bank_account_num'
+        ]
 
 
 class AddressForm(forms.ModelForm):
