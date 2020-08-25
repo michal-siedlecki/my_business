@@ -45,7 +45,7 @@ class InvoiceDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 class InvoiceDownloadView(WeasyTemplateResponseMixin, InvoiceDetailView):
     pdf_stylesheets = [
-        'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min'
+        "https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     ]
 
     def get_pdf_filename(self):

@@ -48,7 +48,7 @@ class ProductUpdateView(ProductCreateView, LoginRequiredMixin, UserPassesTestMix
         product_pk = self.get_object().pk
         serializer = serializers.ProductSerializer(data=request.POST)
         serializer.is_valid(raise_exception=True)
-        services.update_product(**serializer.validated_data, product_pk=product_pk)
+        services.update_product(data=serializer.validated_data, product_pk=product_pk)
         messages.success(request, 'Product updated')
         return redirect('product-list')
 

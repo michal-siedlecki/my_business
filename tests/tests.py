@@ -6,8 +6,7 @@ from apps.products.models import Product
 from apps.invoices.models import Invoice
 from apps.users.models import Profile
 from apps.contractors.models import Contractor
-from mybusiness import serializers
-from . import factories
+from mybusiness import serializers, factories
 
 
 class NotLoggedUserViewsTests(TestCase):
@@ -252,37 +251,6 @@ class ProductCRUDTests(TestCase):
         self.assertEqual(len(Product.objects.all()), 1)
 
 
-class ContractorCRUDTests(TestCase):
-    def setUp(self) -> None:
-        self.user = factories.create_user()
-        self.client.force_login(user=self.user)
-        self.contractor_data = factories.create_contractor_data()
-        self.address_data = factories.create_address_data()
-
-    def test_user_can_create_contractor(self):
-        url = reverse('contractor-new')
-        query_dict = QueryDict('', mutable=True)
-        query_dict.update(self.contractor_data)
-        query_dict.update(self.address_data)
-        response = self.client.post(url, query_dict)
-
-        self.assertEqual(response.url, '/contractors')
-        self.assertEqual(len(Contractor.objects.all()), 1)
-        self.assertIsNotNone(Contractor.objects.get(author=self.user))
-
-    def test_user_can_update_contractor(self):
-        contractor = factories.create_contractor(self.user)
-        updated_contractor_data = self.contractor_data
-        updated_contractor_data['company_name'] = 'New name'
-        url = reverse('contractor-update', kwargs={'pk': contractor.pk})
-        query_dict = QueryDict('', mutable=True)
-        query_dict.update(updated_contractor_data)
-        query_dict.update(self.address_data)
-        response = self.client.post(url, query_dict)
-
-        self.assertEqual(response.url, '/contractors')
-        self.assertEqual(Contractor.objects.get(pk=contractor.pk).company_name, 'New name')
-
 
 class SerializersTests(TestCase):
     def setUp(self) -> None:
@@ -291,7 +259,7 @@ class SerializersTests(TestCase):
         self.client.force_login(user=self.user)
         self.product_1 = factories.create_invoice_product_data('sample_one')
         self.product_2 = factories.create_invoice_product_data('sample_two')
-        self.invoice = factories.create_invoice_data(self.user)
+        self.invoice = factories.create_invoice_data(author=self.user)
 
     def test_product_serializer_returns_list(self):
         d = dict(self.invoice)

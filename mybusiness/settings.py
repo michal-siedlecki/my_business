@@ -119,3 +119,9 @@ STATICFILES_DIRS = (
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LOGIN_REDIRECT_URL = 'invoice-list'
 LOGIN_URL = 'login'
+
+# Rest framework settings
+
+REST_FRAMEWORK = {
+    'DATE_INPUT_FORMATS': ["%Y-%m-%d", "%m/%d/%Y"]
+}

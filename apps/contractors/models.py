@@ -22,4 +22,4 @@ class Contractor(models.Model):
         return self.company_name
 
     def to_list(self):
-        return [self.company_name, *self.address.to_list(), str("NIP: " + str(self.tin))]
+        return [self.company_name, *self.address.to_list(), self.tin]

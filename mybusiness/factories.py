@@ -27,7 +27,9 @@ def create_address_data():
     }
 
 
-def create_address():
+def create_address(data=None):
+    if data:
+        return Address.objects.create(**data)
     return Address.objects.create(**create_address_data())
 
 
@@ -101,12 +103,21 @@ def create_contractor_data():
     }
 
 
-def create_contractor(author):
+def create_contractor(author, data=None, address=None):
+    if not address:
+        address=create_address()
+    else:
+        address=create_address(data=address)
+    if data:
+        return Contractor.objects.create(
+            **data,
+            author=author,
+            address=address
+        )
     return Contractor.objects.create(
         **create_contractor_data(),
-        address=create_address(),
         author=author,
-        on_invoice=False
+        address=address
     )
 
 

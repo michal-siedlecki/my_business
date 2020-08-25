@@ -1,6 +1,41 @@
 {% extends "base.html"%}
 {% block content %}
 
-<h1> About page </h1>
+<h2 class="m-3"> My Business - invoice app - about </h2>
+<h4 class="m-3"> Main features:</h4>
+<ul class="m-3">
+    <li>user authentication</li>
+    <li>create, update, delete invoices</li>
+    <li>manage company profile</li>
+    <li>manage product and contractor profiles</li>
+    <li>create and download PDF invoice</li>
+</ul>
+<h4 class="m-3">Getting Started and installing</h4>
+<ul class="m-3">
+    <li> $ git clone https://github.com/michal-siedlecki/my_business</li>
+   <li> $ source venv/bin/activate</li>
+   <li> $ pip install -U -r requirements.txt</li>
+   <li> $ python manage.py runserver</li>
+   <li> open browser at localhost (127.0.0.1:8000) and feel free to test</li>
+</ul>
+<h4 class="m-3">Prerequisites</h4>
+<h6 class="m-3" >What things you need to install the software:</h6>
+<ul class="m-3">
+    <li> Python 3+</li>
+    <li> Django 3.0.4</li>
+    <li> django-weasyprint</li>
+    <li> django-crispy-forms</li>
+</ul>
+<h4 class="m-3">Built With</h4>
+<ul class="m-3">
+    <li> The Python programming language</li>
+    <li> The Django web framework</li>
+    <li> Pip for installing dependencies</li>
+    <li> The pipenv module</li>
+</ul>
+<h4 class="m-3">Author</h4>
+<p class="m-3">
+    Michał Siedlecki
+</p>
 
 {% endblock content %}
