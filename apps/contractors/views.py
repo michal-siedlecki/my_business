@@ -17,7 +17,6 @@ class ContractorListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return ContractorListView.model.objects.filter(author=self.request.user, on_invoice=False)
 
-
 class ContractorCreateView(LoginRequiredMixin, CreateView):
     template_name = 'contractors/contractor_form.html'
     success_url = 'contractors'

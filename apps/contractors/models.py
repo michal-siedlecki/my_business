@@ -18,8 +18,8 @@ class Contractor(models.Model):
     def get_absolute_url():
         return reverse('contractor-list')
 
-    def __str__(self):
-        return self.company_name
+    # def __str__(self):
+    #     return self.company_name
 
     def to_list(self):
         return [self.company_name, *self.address.to_list(), str("NIP: " + str(self.tin))]
