@@ -53,38 +53,52 @@ def create_product_data():
     }
 
 
-def create_invoice_product_data(self):
-    base = self.create_product_data()
-    base.update({
-        'quantity': 2,
-        'prod_total_nett': 200,
-        'prod_total_tax': 24,
-        'prod_total_gross': 224
+def create_invoice_product_data(product):
+    quantity = faker.random_int(1, 90)
+    total_nett = product.get('price_nett')*quantity
+    total_tax = quantity*total_nett*product.get('tax_rate')//100
+    total_gross = total_nett+total_tax
+    product.update({
+        'quantity': quantity,
+        'prod_total_nett': total_nett,
+        'prod_total_tax': total_tax,
+        'prod_total_gross': total_gross
     })
-    return base
+    return product
 
 
-def make_products_json(num):
+def make_products(num):
     products = {'products': []}
 
     for num in range(num):
         product = create_product_data()
         product['product_id'] = num+1
         products.get('products').append(product)
-    products_json = json.dumps(products)
 
-    return products_json
-
+    return products
 
 
+def make_invoice_products(products):
+    invoice_products = {'invoice_products': []}
 
-def make_products_json(num):
-    products = {'products': []}
+    for num, product in enumerate(products.get('products')):
+        invoice_product = create_invoice_product_data(product)
+        invoice_product['product_id'] = num+1
+        invoice_products.get('invoice_products').append(invoice_product)
 
-    for num in range(num):
-        product = create_product_data()
-        product['product_id'] = num+1
-        products.get('products').append(product)
-    products_json = json.dumps(products)
+    return invoice_products
 
-    return products_json
+
+def save_obj(obj, filename):
+    obj_json = json.dumps(obj)
+    with open(filename, 'w') as f:
+        f.write(obj_json)
+
+
+p = make_products(10)
+ip = make_invoice_products(p)
+
+for item in ip['invoice_products']:
+    print(item)
+    print()
+
