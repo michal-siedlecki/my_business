@@ -4,51 +4,27 @@ from django.contrib.auth.models import User
 
 from apps.contractors.models import Contractor
 from apps.invoices.models import Invoice
-from apps.users.models import Address, Profile
+from apps.users.models import Address
 from apps.products.models import Product
+from mybusiness import factories_data as fd
 
 faker = Faker('pl_PL')
 
 
-def create_profile_data():
-    return {
-        'company_name': faker.company(),
-        'tin': faker.nip(),
-        'bank_name': faker.credit_card_provider(),
-        'bank_account_num': faker.random_number(26)
-    }
-
-
-def create_address_data():
-    return {
-        'street': faker.street_address(),
-        'city': faker.city(),
-        'zip_code': faker.postcode()
-    }
+def create_user():
+    return User.objects.create_user(**fd.create_user_data())
 
 
 def create_address(data=None):
     if data:
         return Address.objects.create(**data)
-    return Address.objects.create(**create_address_data())
-
-
-def create_user():
-    return User.objects.create_user(
-        username=faker.user_name(),
-        email=faker.email(),
-        password=faker.password()
-    )
-
-
-def create_bank_account_num():
-    return faker.random_number(26)
+    return Address.objects.create(**fd.create_address_data())
 
 
 def update_user_profile(user):
     user.profile.address = create_address()
     user.profile.address.save()
-    profile_data = create_profile_data()
+    profile_data = fd.create_profile_data()
     user.profile.company_name = profile_data.get('company_name')
     user.profile.tin = profile_data.get('tin')
     user.profile.save()
@@ -64,7 +40,7 @@ def create_invoice_data(author):
         'total_nett': 200.0,
         'total_tax': 48.0,
         'total_gross': 248.0,
-        'bank_num_account': create_bank_account_num(),
+        'bank_num_account': fd.create_bank_account_num(),
         'date_supply': datetime.date(2020, 8, 5),
         'date_due': datetime.date(2020, 8, 5),
         'author': author,
@@ -95,14 +71,6 @@ def create_invoice_product(document, author):
         author=author
     )
 
-
-def create_contractor_data():
-    return {
-        'company_name': faker.company(),
-        'tin': faker.nip()
-    }
-
-
 def create_contractor(author, data=None, address=None):
     if not address:
         address=create_address()
@@ -121,26 +89,8 @@ def create_contractor(author, data=None, address=None):
     )
 
 
-def create_product_data():
-    return {
-        'product_id': faker.random_number(1),
-        'name': 'sample_product',
-        'price_nett': 100,
-        'price_gross': 123,
-        'tax_rate': 23,
-    }
-
-
-def create_invoice_product_data(name):
-    base = create_product_data()
-    base.update({
-        'quantity': 2,
-        'prod_total_nett': 200,
-        'prod_total_tax': 24,
-        'prod_total_gross': 224
-    })
-    return base
 
 
 def create_product(user):
     return Product.objects.create(**create_product_data(), author=user)
+
