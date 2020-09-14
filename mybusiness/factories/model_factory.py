@@ -5,7 +5,7 @@ from apps.contractors.models import Contractor
 from apps.invoices.models import Invoice
 from apps.users.models import Address
 from apps.products.models import Product
-from mybusiness.tests import factories_data as fd
+from mybusiness.factories import data_factory as fd
 from mybusiness import services
 
 faker = Faker('pl_PL')
@@ -62,11 +62,15 @@ def create_product(user):
     return Product.objects.create(**fd.create_product_data(), author=user)
 
 def create_invoice_product(document, author):
-    return Product(
-        **fd.create_product_data(),
+    base_product_data = fd.create_product_data()
+
+    product = Product(
+        **base_product_data,
         document=document,
         author=author
     )
+
+
 
 def create_contractor(author, data=None, address=None):
     if not address:

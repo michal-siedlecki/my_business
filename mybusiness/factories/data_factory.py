@@ -1,4 +1,3 @@
-import json
 import datetime
 from faker import Faker
 
@@ -68,7 +67,7 @@ def create_invoice_product_data(product: dict) -> dict:
     return product
 
 
-def create_invoice_data() -> dict:
+def create_invoice_base_data() -> dict:
     date_created = datetime.datetime.strptime(faker.date(),'%Y-%m-%d').date()
     date_supply = date_created + datetime.timedelta(days=faker.random_int(0,3))
     date_due = date_created + datetime.timedelta(days=faker.random_int(7,30))
@@ -80,18 +79,3 @@ def create_invoice_data() -> dict:
         'date_due': date_due,
     }
 
-
-def bulk_create(create_func, num, obj_key_name):
-    object_dict = {obj_key_name: []}
-    for _ in range(num):
-        object = create_func()
-        object_dict[obj_key_name].append(object)
-    return object_dict
-
-
-def save_obj(obj, filename):
-    obj_json = json.dumps(obj)
-    with open(filename, 'w') as f:
-        f.write(obj_json)
-
-print(create_invoice_data())
