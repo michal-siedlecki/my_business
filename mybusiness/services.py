@@ -140,3 +140,24 @@ def create_profile(data, address, user):
 def update_profile(profile_pk, data, address_pk, address_data):
     Address.objects.filter(pk=address_pk).update(**address_data)
     Profile.objects.filter(pk=profile_pk).update(**data)
+
+
+def get_products_total_nett(products):
+    sum = 0
+    for product in products:
+        sum += product.prod_total_nett
+    return sum
+
+
+def get_products_total_tax(products):
+    sum = 0
+    for product in products:
+        sum += product.prod_total_tax
+    return sum
+
+
+def get_products_total_gross(products):
+    sum = 0
+    for product in products:
+        sum += product.prod_total_gross
+    return sum

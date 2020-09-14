@@ -1,10 +1,11 @@
 import json
+import datetime
 from faker import Faker
 
 faker = Faker('pl_PL')
 
 
-def create_profile_data():
+def create_profile_data() -> dict:
     return {
         'company_name': faker.company(),
         'tin': faker.nip(),
@@ -13,7 +14,7 @@ def create_profile_data():
     }
 
 
-def create_address_data():
+def create_address_data() -> dict:
     return {
         'street': faker.street_address(),
         'city': faker.city(),
@@ -21,7 +22,7 @@ def create_address_data():
     }
 
 
-def create_user_data():
+def create_user_data() -> dict:
     return {
         'username': faker.user_name(),
         'email': faker.email(),
@@ -29,18 +30,18 @@ def create_user_data():
     }
 
 
-def create_bank_account_num():
+def create_bank_account_num() -> int:
     return faker.random_number(26)
 
 
-def create_contractor_data():
+def create_contractor_data() -> dict:
     return {
         'company_name': faker.company(),
         'tin': faker.nip()
     }
 
 
-def create_product_data():
+def create_product_data() -> dict:
     price_n = faker.random_int(10, 500)
     tax_r = faker.random_element([0, 8, 23])
     price_g = price_n+price_n*tax_r//100
@@ -53,7 +54,7 @@ def create_product_data():
     }
 
 
-def create_invoice_product_data(product):
+def create_invoice_product_data(product: dict) -> dict:
     quantity = faker.random_int(1, 90)
     total_nett = product.get('price_nett')*quantity
     total_tax = quantity*total_nett*product.get('tax_rate')//100
@@ -67,26 +68,25 @@ def create_invoice_product_data(product):
     return product
 
 
-def make_products(num):
-    products = {'products': []}
+def create_invoice_data() -> dict:
+    date_created = datetime.datetime.strptime(faker.date(),'%Y-%m-%d').date()
+    date_supply = date_created + datetime.timedelta(days=faker.random_int(0,3))
+    date_due = date_created + datetime.timedelta(days=faker.random_int(7,30))
+    return {
+        'invoice_id': 'FV_'+str(faker.numerify()),
+        'date_created': date_created,
+        'city_created': faker.city(),
+        'date_supply': date_supply,
+        'date_due': date_due,
+    }
 
-    for num in range(num):
-        product = create_product_data()
-        product['product_id'] = num+1
-        products.get('products').append(product)
 
-    return products
-
-
-def make_invoice_products(products):
-    invoice_products = {'invoice_products': []}
-
-    for num, product in enumerate(products.get('products')):
-        invoice_product = create_invoice_product_data(product)
-        invoice_product['product_id'] = num+1
-        invoice_products.get('invoice_products').append(invoice_product)
-
-    return invoice_products
+def bulk_create(create_func, num, obj_key_name):
+    object_dict = {obj_key_name: []}
+    for _ in range(num):
+        object = create_func()
+        object_dict[obj_key_name].append(object)
+    return object_dict
 
 
 def save_obj(obj, filename):
@@ -94,11 +94,4 @@ def save_obj(obj, filename):
     with open(filename, 'w') as f:
         f.write(obj_json)
 
-
-p = make_products(10)
-ip = make_invoice_products(p)
-
-for item in ip['invoice_products']:
-    print(item)
-    print()
-
+print(create_invoice_data())
