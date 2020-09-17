@@ -40,17 +40,23 @@ def create_contractor_data() -> dict:
     }
 
 
-def create_product_data() -> dict:
+def create_product_data(author_id: int = None) -> dict:
     price_n = faker.random_int(10, 500)
     tax_r = faker.random_element([0, 8, 23])
     price_g = price_n+price_n*tax_r//100
-    return {
-        'product_id': faker.random_number(1),
-        'name': f'produkt {faker.word()}',
-        'price_nett': price_n,
-        'price_gross': price_g,
-        'tax_rate': tax_r,
-    }
+    data = {
+            'product_id': faker.random_number(1),
+            'name': f'produkt {faker.word()}',
+            'price_nett': price_n,
+            'price_gross': price_g,
+            'tax_rate': tax_r,
+            'author': author_id
+        }
+    if author_id:
+        data.update({'author': author_id})
+        return data
+    data.pop('author')
+    return data
 
 
 def create_invoice_product_data(product: dict) -> dict:
@@ -67,7 +73,7 @@ def create_invoice_product_data(product: dict) -> dict:
     return product
 
 
-def create_invoice_base_data() -> dict:
+def create_invoice_base_data(seller_pk: int=None, buyer_pk: int = None) -> dict:
     date_created = datetime.datetime.strptime(faker.date(),'%Y-%m-%d').date()
     date_supply = date_created + datetime.timedelta(days=faker.random_int(0,3))
     date_due = date_created + datetime.timedelta(days=faker.random_int(7,30))
@@ -77,5 +83,8 @@ def create_invoice_base_data() -> dict:
         'city_created': faker.city(),
         'date_supply': date_supply,
         'date_due': date_due,
+        'seller': seller_pk,
+        'buyer': buyer_pk,
+        'author': seller_pk
     }
 

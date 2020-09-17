@@ -4,6 +4,8 @@ from apps.products.models import Product
 from apps.contractors.models import Contractor
 from apps.users.models import Profile, Address
 
+def get_user(pk):
+    return User.objects.get(pk=pk)
 
 def get_invoice_model():
     return Invoice
@@ -167,14 +169,14 @@ def get_nett_tax_gross(nett: float, tax: float) -> dict:
     tax_value = nett * tax // 100
     gross = nett + tax_value
     return {
-        'nett': nett,
-        'tax': tax_value,
-        'gross': gross
+        'prod_total_nett': nett,
+        'prod_total_tax': tax_value,
+        'prod_total_gross': gross
     }
 
 
 def get_nett_tax_gross_from_product_data(product_data: dict, quantity: int=None) -> dict:
-    nett = product_data.get('nett_price')
+    nett = product_data.get('price_nett')
     tax = product_data.get('tax_rate')
     if quantity:
         return {k: quantity*v for k,v in get_nett_tax_gross(nett, tax).items()}

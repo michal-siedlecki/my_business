@@ -40,7 +40,7 @@ class ProductViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_user_can_create_product(self):
-        product = data_factory.create_product_data()
+        product = data_factory.create_product_data(author_id=self.user.pk)
         url = reverse('product-new')
         response = self.client.post(url, product)
 
@@ -48,7 +48,7 @@ class ProductViewTests(TestCase):
         self.assertEqual(len(Product.objects.all()), 1)
 
     def test_user_can_create_invoice_product(self):
-        product_data = data_factory.create_product_data()
+        product_data = data_factory.create_product_data(author_id=self.user.pk)
         product_invoice_data = data_factory.create_invoice_product_data(product_data)
         url = reverse('product-new')
         response = self.client.post(url, product_invoice_data)
@@ -66,11 +66,12 @@ class ProductSerializerTests(TestCase):
         self.factory = RequestFactory()
         self.user = model_factory.create_user()
         self.client.force_login(user=self.user)
-        product_data = data_factory.create_product_data()
+        self.other_contractor = model_factory.create_contractor(author=self.user)
+        product_data = data_factory.create_product_data(author_id=self.user.pk)
         self.product_1_data = data_factory.create_invoice_product_data(product_data)
-        product_data = data_factory.create_product_data()
+        product_data = data_factory.create_product_data(author_id=self.user.pk)
         self.product_2_data = data_factory.create_invoice_product_data(product_data)
-        self.invoice_data = data_factory.create_invoice_base_data()
+        self.invoice_data = data_factory.create_invoice_base_data(seller_pk=self.user.pk, buyer_pk=self.other_contractor.pk)
 
     def test_product_serializer_returns_list(self):
         d = self.invoice_data.copy()

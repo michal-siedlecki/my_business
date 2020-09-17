@@ -21,6 +21,7 @@ class InvoiceViewTests(TestCase):
         self.user = model_factory.create_user()
         self.client.force_login(user=self.user)
         model_factory.update_fake_user_profile(self.user)
+        self.other_contractor = model_factory.create_contractor(author=self.user)
 
     def test_logged_user_can_see_invoice_list_view(self):
         url = (reverse('invoice-list'))
@@ -75,9 +76,9 @@ class InvoiceViewTests(TestCase):
 
     def test_user_can_create_invoice_single_product(self):
         url = reverse('invoice-new')
-        product_data = data_factory.create_product_data()
+        product_data = data_factory.create_product_data(author_id=self.user.pk)
         invoice_product_data = data_factory.create_invoice_product_data(product_data)
-        invoice_data = data_factory.create_invoice_base_data()
+        invoice_data = data_factory.create_invoice_base_data(seller_pk=self.user.pk, buyer_pk=self.other_contractor.pk)
         query_dict = QueryDict('', mutable=True)
         query_dict.update(invoice_data)
         query_dict.update(invoice_product_data)
@@ -91,11 +92,11 @@ class InvoiceViewTests(TestCase):
 
     def test_user_can_create_invoice_multiple_product(self):
         url = reverse('invoice-new')
-        product_01_data = data_factory.create_product_data()
-        product_02_data = data_factory.create_product_data()
+        product_01_data = data_factory.create_product_data(author_id=self.user.pk)
+        product_02_data = data_factory.create_product_data(author_id=self.user.pk)
         invoice_product_data_01 = data_factory.create_invoice_product_data(product_01_data)
         invoice_product_data_02 = data_factory.create_invoice_product_data(product_02_data)
-        invoice_data = data_factory.create_invoice_base_data()
+        invoice_data = data_factory.create_invoice_base_data(seller_pk=self.user.pk, buyer_pk=self.other_contractor.pk)
         query_dict = QueryDict('', mutable=True)
         query_dict.update(invoice_data)
         query_dict.update(invoice_product_data_01)
@@ -109,7 +110,7 @@ class InvoiceViewTests(TestCase):
     def test_user_can_update_invoice_loads_view(self):
         invoice = model_factory.create_empty_invoice('FV_01', self.user)
         invoice.save()
-        product_on_invoice = model_factory.create_invoice_product(document=invoice, author=self.user)
+        product_on_invoice = model_factory.create_invoice_product(document=invoice, author_id=self.user.pk)
         product_on_invoice.save()
         url = (reverse('invoice-update', kwargs={'pk': invoice.pk}))
         response = self.client.get(url)
@@ -119,14 +120,16 @@ class InvoiceViewTests(TestCase):
     def test_user_can_update_invoice_data(self):
         invoice = model_factory.create_empty_invoice('FV_01', self.user)
         invoice.save()
-        product_on_invoice = model_factory.create_invoice_product(document=invoice, author=self.user)
+        product_on_invoice = model_factory.create_invoice_product(document=invoice, author_id=self.user.pk)
         product_on_invoice.save()
         url = (reverse('invoice-update', kwargs={'pk': invoice.pk}))
-        updated_invoice_data = data_factory.create_invoice_base_data()
+        updated_invoice_data = data_factory.create_invoice_base_data(seller_pk=self.user.pk, buyer_pk=self.other_contractor.pk)
         query_dict = QueryDict('', mutable=True)
         query_dict.update(updated_invoice_data)
-        updated_product_data = data_factory.create_product_data()
-        query_dict.update(updated_product_data)
+        updated_product_data = data_factory.create_product_data(author_id=self.user.pk)
+        updated_invoice_product = data_factory.create_invoice_product_data(updated_product_data)
+        query_dict.update(updated_invoice_product)
+
         response = self.client.post(url, query_dict)
 
         self.assertEqual(response.status_code, 302)

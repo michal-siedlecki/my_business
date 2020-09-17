@@ -5,7 +5,7 @@ from django.db.models import fields
 
 
 from apps.users.models import Profile, Address
-from mybusiness.factories import model_factory
+from mybusiness.factories import model_factory, data_factory
 
 
 def get_to_list_fields(model):
@@ -42,15 +42,6 @@ class ProfileModelTests(TestCase):
     def test_user_profile_is_auto_created(self):
         user_profile = Profile.objects.get(user=self.user)
         self.assertEqual(user_profile.user, self.user)
-
-    def test_profile_to_list(self):
-        list_fields = get_to_list_fields(Address)
-        list_fields.append(get_to_list_fields(Profile))
-        print(list_fields)
-
-        profile_list = self.user.profile.to_list()
-        self.assertIs(isinstance(profile_list, list), True)
-        self.assertEqual(len(profile_list), len(list_fields))
 
 
 class UnlogedUserViewTests(TestCase):
@@ -90,8 +81,8 @@ class UserViewsTests(TestCase):
 
     def test_user_can_update_profile(self):
         url = reverse('profile')
-        profile_data = model_factory.create_profile_data()
-        address_data = model_factory.create_address_data()
+        profile_data = data_factory.create_profile_data()
+        address_data = data_factory.create_address_data()
         query_dict = QueryDict('', mutable=True)
         query_dict.update(profile_data)
         query_dict.update(address_data)

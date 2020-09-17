@@ -58,17 +58,27 @@ def create_empty_invoice(invoice_id, author, num=None):
             author=author
         )
 
-def create_product(user):
-    return Product.objects.create(**fd.create_product_data(), author=user)
 
-def create_invoice_product(document, author):
+def create_product(author):
+    return Product.objects.create(**fd.create_product_data(), author=author)
+
+
+def create_invoice_product(document, author_id):
     base_product_data = fd.create_product_data()
-
+    author = services.get_user(author_id)
+    quantity = faker.random_int(1,99)
+    product_summary = services.get_nett_tax_gross_from_product_data(base_product_data, quantity=quantity)
     product = Product(
         **base_product_data,
-        document=document,
-        author=author
+        **product_summary,
+        document=document
     )
+    product.author = author
+    product.save()
+    return product
+
+
+
 
 
 
