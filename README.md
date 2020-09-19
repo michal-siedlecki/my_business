@@ -1,6 +1,6 @@
 # My Business - invoice app
 
-![MITLICENSE](https://img.shields.io/badge/MIT_License-+-orange.svg?style=flat-square)
+![GitHub](https://img.shields.io/github/license/michal-siedlecki/my_business)
 
 ### Main features:
 1. create, update, delete invoices
@@ -15,32 +15,36 @@
 
 ### Getting Started
 
+```
 $ git clone https://github.com/michal-siedlecki/my_business
+```
+
 
 ### Prerequisites
 
 What things you need to install the software:
 
 1. Python 3+
-1. Django 3.0.4
-1. django-weasyprint
-1. django-crispy-forms
+1. Django 3+
 
 ### Installing
 
-1. Navigate to my_business/mybusiness app and run django
+* Navigate to my_business/mybusiness folder and activate virtual environment
 
 ```
-python manage.py runserver
+source venv/bin/activate
 ```
+* Run application locally
+```
+python manage.py runserver
+``` 
 
 ### Built With
 
 * The Python programming language
 * The Django web framework
 * Pip for installing dependencies
-* The pipenv module
-
+* Django-weasy print for creating PDFs
 
 ### Author
 
