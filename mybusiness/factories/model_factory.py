@@ -29,16 +29,22 @@ def update_fake_user_profile(user):
     profile_data = fd.create_profile_data()
     user.profile.company_name = profile_data.get('company_name')
     user.profile.tin = profile_data.get('tin')
+    user.profile.bank_name = profile_data.get('bank_name')
+    user.profile.bank_account_num = profile_data.get('bank_account_num')
     user.profile.save()
 
 
 def create_fake_invoice(author, data=None, buyer=None, products=None):
     invoice = Invoice(**data) if data else Invoice()
     invoice.author = author
+    if not buyer:
+        buyer = create_contractor(author=author)
+    if not products:
+        products = [create_product(author=author)]
     invoice.total_nett = services.get_products_total_nett(products)
     invoice.total_tax = services.get_products_total_tax(products)
     invoice.total_gross = services.get_products_total_gross(products)
-    invoice.buyer = buyer if buyer else create_contractor(author)
+    invoice.buyer = buyer
     invoice.save()
     services.assign_contractor(buyer)
     services.assign_products_to_invoice(products=products, invoice=invoice)
@@ -63,7 +69,7 @@ def create_product(author):
     return Product.objects.create(**fd.create_product_data(), author=author)
 
 
-def create_invoice_product(document, author_id):
+def create_invoice_product(document, author_id, product=None):
     base_product_data = fd.create_product_data()
     author = services.get_user(author_id)
     quantity = faker.random_int(1,99)
@@ -78,8 +84,8 @@ def create_invoice_product(document, author_id):
     return product
 
 
-
-
+def create_invoice_products(document, author, products: list):
+    return map(create_invoice_product(document, author), products)
 
 
 def create_contractor(author, data=None, address=None):

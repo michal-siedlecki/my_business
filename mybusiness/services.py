@@ -101,8 +101,11 @@ def assign_contractor(contractor):
 
 
 def assign_products_to_invoice(products, invoice):
-    for product_data in products:
-        product = Product(**product_data)
+    for data in products:
+        if not isinstance(data, Product):
+            product = Product(**data)
+        else:
+            product = data
         product.document = invoice
         product.author = invoice.author
         product.save()
